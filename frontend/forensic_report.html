@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionGuard AI — Forensic Analysis Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════════════
+       SCREEN STYLES — dark, premium, on-brand
+    ══════════════════════════════════════════════════════════ */
+    :root {
+      --bg:        #070d16;
+      --surface:   #0d1929;
+      --surface-2: #111f35;
+      --ink:       #f2f7ff;
+      --muted:     #91a8c4;
+      --line:      rgba(137,170,212,.15);
+      --primary:   #2ad4ff;
+      --primary-2: #4cffc2;
+      --accent:    #ffb24a;
+      --danger:    #ff5e7a;
+      --glass:     rgba(19,31,52,.60);
+      --r:         10px;
+    }
+
+    *  { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+
+    body {
+      background:
+        radial-gradient(circle at 80% -10%, rgba(42,212,255,.17), transparent 36%),
+        radial-gradient(circle at 20% 110%, rgba(76,255,194,.11), transparent 30%),
+        linear-gradient(130deg, #040a12, var(--bg));
+      color: var(--ink);
+      font-family: "Manrope", sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,.15); }
+    ::-webkit-scrollbar-thumb { background: rgba(42,212,255,.3); border-radius: 99px; }
+
+    /* ── Print bar (top CTA) ── */
+    .print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7,13,22,.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .print-bar-brand {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: .95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .brand-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 7px var(--primary);
+      animation: blink 2.5s ease-in-out infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+    .print-bar-actions { display: flex; gap: 8px; align-items: center; }
+
+    .btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      font-family: "Manrope", sans-serif;
+      font-weight: 700;
+      font-size: .82rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .22s ease;
+      white-space: nowrap;
+    }
+
+    .btn-ghost {
+      border-color: var(--line);
+      background: rgba(11,18,31,.55);
+      color: var(--ink);
+    }
+
+    .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #44b3ff);
+      color: #041320;
+      box-shadow: 0 4px 14px rgba(42,212,255,.28);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(42,212,255,.42);
+    }
+
+    /* ── Report shell ── */
+    .report-shell {
+      width: min(900px, 94vw);
+      margin: 32px auto 64px;
+    }
+
+    /* ── Report Header ── */
+    .report-header {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 24px;
+      align-items: center;
+      padding: 28px 32px;
+      background: var(--glass);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    .header-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logo-mark {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      box-shadow: 0 0 20px rgba(42,212,255,.35);
+    }
+
+    .logo-text {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .header-meta-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .header-meta-sub {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .header-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    .meta-item {
+      padding: 8px 12px;
+      background: rgba(11,18,31,.55);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: .78rem;
+    }
+
+    .meta-item-label {
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .meta-item-value {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── Section card ── */
+    .report-section {
+      background: var(--glass);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .report-section::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 3px 0 0 3px;
+      background: var(--section-accent, var(--primary));
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-badge {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+
+    /* ── Executive Summary ── */
+    .verdict-banner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      border-radius: 12px;
+      border: 1px solid;
+      margin-bottom: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .verdict-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: .06;
+    }
+
+    .verdict-icon { font-size: 2rem; flex-shrink: 0; }
+
+    .verdict-label {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .verdict-conf {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .verdict-conf small {
+      display: block;
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      opacity: .7;
+      text-align: right;
+    }
+
+    .executive-summary-text {
+      color: #cdd8ef;
+      font-size: .92rem;
+      line-height: 1.7;
+    }
+
+    /* ── Risk Meter ── */
+    .risk-meter {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .risk-meter-label {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      flex-shrink: 0;
+      width: 64px;
+    }
+
+    .risk-track {
+      flex: 1;
+      height: 10px;
+      background: rgba(77,101,136,.22);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(137,170,212,.12);
+      position: relative;
+    }
+
+    .risk-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width .8s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    .risk-value {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: .9rem;
+      flex-shrink: 0;
+      width: 48px;
+      text-align: right;
+    }
+
+    /* ── Indicator lists ── */
+    .indicator-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .indicator-item {
+      padding: 14px 16px;
+      border-radius: var(--r);
+      border: 1px solid;
+      position: relative;
+    }
+
+    .indicator-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .indicator-name {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: .88rem;
+      font-weight: 700;
+    }
+
+    .indicator-value {
+      font-family: "JetBrains Mono", monospace;
+      font-size: .82rem;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 5px;
+      flex-shrink: 0;
+    }
+
+    .indicator-explain {
+      font-size: .82rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* AI indicator (red tint) */
+    .indicator-ai {
+      border-color: rgba(255,94,122,.25);
+      background: rgba(255,94,122,.05);
+    }
+    .indicator-ai .indicator-name { color: #ff8099; }
+    .indicator-ai .indicator-value {
+      background: rgba(255,94,122,.12);
+      color: #ff8099;
+    }
+
+    /* Real indicator (green tint) */
+    .indicator-real {
+      border-color: rgba(76,255,194,.22);
+      background: rgba(76,255,194,.04);
+    }
+    .indicator-real .indicator-name { color: var(--primary-2); }
+    .indicator-real .indicator-value {
+      background: rgba(76,255,194,.1);
+      color: var(--primary-2);
+    }
+
+    .section-note {
+      margin-top: 14px;
+      font-size: .82rem;
+      color: var(--muted);
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-note::before {
+      content: '→';
+      color: var(--primary);
+      font-style: normal;
+    }
+
+    /* ── Observation Grid ── */
+    .obs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .obs-card {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(11,18,31,.5);
+    }
+
+    .obs-label {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .obs-value {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .obs-detail { font-size: .8rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Interpretation ── */
+    .interp-scenario {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(42,212,255,.08);
+      border: 1px solid rgba(42,212,255,.25);
+      font-family: "Space Grotesk", sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+
+    .interp-body {
+      font-size: .91rem;
+      color: #cdd8ef;
+      line-height: 1.75;
+    }
+
+    .interp-body p { margin-bottom: 12px; }
+    .interp-body p:last-child { margin-bottom: 0; }
+
+    .contradiction-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: var(--r);
+      background: rgba(255,178,74,.06);
+      border: 1px solid rgba(255,178,74,.25);
+      font-size: .84rem;
+      color: var(--accent);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .contradiction-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Model Agreement ── */
+    .model-agreement {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: var(--r);
+      background: rgba(42,212,255,.05);
+      border: 1px solid rgba(42,212,255,.18);
+      font-size: .84rem;
+      color: var(--muted);
+    }
+
+    /* ── Top Factors ── */
+    .top-factors { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+
+    .factor-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      border-radius: var(--r);
+      background: rgba(11,18,31,.5);
+      border: 1px solid var(--line);
+      font-size: .84rem;
+    }
+
+    .factor-rank {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(42,212,255,.1);
+      border: 1px solid rgba(42,212,255,.2);
+      border-radius: 4px;
+      padding: 2px 6px;
+      flex-shrink: 0;
+    }
+
+    /* ── Final Verdict ── */
+    .final-verdict-box {
+      padding: 24px 28px;
+      border-radius: 14px;
+      border: 2px solid;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .final-verdict-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: .05;
+    }
+
+    .final-verdict-header {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .final-verdict-sub {
+      font-size: .85rem;
+      opacity: .7;
+      margin-bottom: 16px;
+      font-family: "Space Grotesk", sans-serif;
+    }
+
+    .recommendation {
+      padding: 14px 18px;
+      border-radius: var(--r);
+      background: rgba(11,18,31,.6);
+      border: 1px solid rgba(137,170,212,.15);
+      font-size: .88rem;
+      color: #cdd8ef;
+      line-height: 1.65;
+    }
+
+    .recommendation strong {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    /* ── Signature / Sign-off ── */
+    .signature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .sig-box {
+      padding: 14px 16px;
+      border-radius: var(--r);
+      border: 1px solid var(--line);
+      background: rgba(11,18,31,.45);
+    }
+
+    .sig-label {
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .sig-line {
+      height: 1px;
+      background: var(--line);
+      margin-bottom: 6px;
+    }
+
+    .sig-name {
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    /* ── Footer ── */
+    .report-footer {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--muted);
+      font-size: .78rem;
+      border-top: 1px solid var(--line);
+      margin-top: 8px;
+    }
+
+    .report-footer strong { color: var(--primary); }
+
+    /* ── No data screen ── */
+    .no-data {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .no-data-icon { font-size: 3rem; opacity: .4; }
+    .no-data h2 { font-family: "Space Grotesk", sans-serif; color: var(--muted); }
+    .no-data p { color: var(--muted); font-size: .9rem; }
+
+    /* ══════════════════════════════════════════════════════════
+       PRINT STYLES — clean white, PDF-ready
+    ══════════════════════════════════════════════════════════ */
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      body {
+        background: #fff !important;
+        color: #1a2236 !important;
+        font-size: 11pt;
+      }
+
+      .print-bar { display: none !important; }
+
+      .report-shell {
+        width: 100%;
+        margin: 0;
+        padding: 0 10mm;
+      }
+
+      .report-header {
+        background: #f8faff !important;
+        border: 1.5px solid #d0dcf0 !important;
+        backdrop-filter: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .header-meta-title { color: #1a2236 !important; }
+      .header-meta-sub   { color: #5a7099 !important; }
+
+      .meta-item {
+        background: #f0f4ff !important;
+        border-color: #d0dcf0 !important;
+      }
+
+      .meta-item-label  { color: #5a7099 !important; }
+      .meta-item-value  { color: #1a2236 !important; }
+
+      .report-section {
+        background: #fff !important;
+        border: 1.5px solid #d0dcf0 !important;
+        backdrop-filter: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 12px;
+      }
+
+      .report-section::before { background: var(--section-accent, #2ad4ff) !important; }
+
+      .section-title { color: #1a2236 !important; }
+
+      .verdict-banner {
+        background: transparent !important;
+        break-inside: avoid;
+      }
+
+      .verdict-label { color: #1a2236 !important; }
+
+      .executive-summary-text { color: #3a4a6a !important; }
+
+      .risk-track {
+        background: #e8ecf5 !important;
+        border-color: #d0dcf0 !important;
+      }
+
+      /* AI indicators */
+      .indicator-ai {
+        background: #fff0f3 !important;
+        border-color: #f0b0bc !important;
+      }
+
+      .indicator-ai .indicator-name { color: #c0304a !important; }
+      .indicator-ai .indicator-value {
+        background: #ffe4ea !important;
+        color: #c0304a !important;
+      }
+
+      /* Real indicators */
+      .indicator-real {
+        background: #f0fff8 !important;
+        border-color: #a0e8c8 !important;
+      }
+
+      .indicator-real .indicator-name { color: #107050 !important; }
+      .indicator-real .indicator-value {
+        background: #d0f8e8 !important;
+        color: #107050 !important;
+      }
+
+      .indicator-explain { color: #5a7099 !important; }
+      .section-note { color: #5a7099 !important; }
+      .section-note::before { color: #2ad4ff !important; }
+
+      .obs-card {
+        background: #f8faff !important;
+        border-color: #d0dcf0 !important;
+      }
+
+      .obs-label  { color: #5a7099 !important; }
+      .obs-value  { color: #1a2236 !important; }
+      .obs-detail { color: #5a7099 !important; }
+
+      .interp-scenario {
+        background: #eef7ff !important;
+        border-color: #b0d8f0 !important;
+        color: #1060a0 !important;
+      }
+
+      .interp-body { color: #3a4a6a !important; }
+
+      .contradiction-box {
+        background: #fff9ee !important;
+        border-color: #f0d070 !important;
+        color: #906010 !important;
+      }
+
+      .model-agreement {
+        background: #eef7ff !important;
+        border-color: #b0d8f0 !important;
+        color: #5a7099 !important;
+      }
+
+      .factor-item {
+        background: #f8faff !important;
+        border-color: #d0dcf0 !important;
+        color: #3a4a6a !important;
+      }
+
+      .factor-rank {
+        background: #ddeeff !important;
+        border-color: #b0d0f0 !important;
+        color: #1060a0 !important;
+      }
+
+      .final-verdict-box { break-inside: avoid; page-break-inside: avoid; }
+
+      .final-verdict-header { color: #1a2236 !important; }
+      .final-verdict-sub    { color: #5a7099 !important; }
+
+      .recommendation {
+        background: #f8faff !important;
+        border-color: #d0dcf0 !important;
+        color: #3a4a6a !important;
+      }
+
+      .recommendation strong { color: #5a7099 !important; }
+
+      .sig-box   { background: #f8faff !important; border-color: #d0dcf0 !important; }
+      .sig-label { color: #5a7099 !important; }
+      .sig-line  { background: #d0dcf0 !important; }
+      .sig-name  { color: #5a7099 !important; }
+
+      .report-footer {
+        border-color: #d0dcf0 !important;
+        color: #5a7099 !important;
+      }
+
+      .report-footer strong { color: #2ad4ff !important; }
+
+      @page {
+        margin: 15mm 12mm;
+        size: A4;
+      }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .report-shell { width: 100%; padding: 0 12px; }
+      .report-header { grid-template-columns: 1fr; }
+      .header-logo { flex-direction: row; }
+      .signature-row { grid-template-columns: 1fr; }
+      .verdict-banner { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Sticky print bar ── -->
+  <div class="print-bar no-print">
+    <a href="/dashboard" class="print-bar-brand">
+      <span class="brand-dot"></span>
+      VisionGuard AI
+    </a>
+    <div class="print-bar-actions">
+      <a href="/dashboard" class="btn btn-ghost">← Back to Dashboard</a>
+      <button class="btn btn-primary" onclick="window.print()">⬇ Export PDF</button>
+    </div>
+  </div>
+
+  <!-- ── Report content — rendered by JS ── -->
+  <div class="report-shell" id="reportShell">
+    <div class="no-data">
+      <div class="no-data-icon">⏳</div>
+      <h2>Loading report…</h2>
+      <p>Reading analysis data from session.</p>
+    </div>
+  </div>
+
+  <script>
+  /* ══════════════════════════════════════════════════════════════
+     INTELLIGENCE ENGINE
+     All analysis is driven purely from the stored result JSON.
+     No values are hardcoded or hallucinated.
+  ══════════════════════════════════════════════════════════════ */
+
+  // ── 1. Load data ────────────────────────────────────────────
+  const raw = localStorage.getItem("analysisResult");
+  if (!raw) {
+    document.getElementById("reportShell").innerHTML = `
+      <div class="no-data">
+        <div class="no-data-icon">🔒</div>
+        <h2>No Analysis Data Found</h2>
+        <p>Please run an analysis first before generating a report.</p>
+        <a href="/upload" class="btn btn-primary" style="margin-top:16px;">Go to Upload</a>
+      </div>`;
+    throw new Error("No data");
+  }
+
+  let state = {}, result = {};
+  try {
+    state  = JSON.parse(raw);
+    result = state.result || {};
+  } catch (e) {
+    document.getElementById("reportShell").innerHTML = `
+      <div class="no-data">
+        <div class="no-data-icon">⚠️</div>
+        <h2>Corrupted Data</h2>
+        <p>The analysis session data could not be read. Please run a new analysis.</p>
+        <a href="/upload" class="btn btn-primary" style="margin-top:16px;">New Analysis</a>
+      </div>`;
+    throw e;
+  }
+
+  // ── 2. Helper utilities ─────────────────────────────────────
+  function clamp(v, lo = 0, hi = 100) { return Math.max(lo, Math.min(hi, Number(v) || 0)); }
+  function pct(v)   { return clamp(v).toFixed(1) + "%"; }
+  function esc(str) {
+    return String(str || "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function formatTime(seconds) {
+    const s = Math.max(0, Number(seconds || 0));
+    const mm = Math.floor(s / 60).toString().padStart(2,"0");
+    const ss = Math.floor(s % 60).toString().padStart(2,"0");
+    return `${mm}:${ss}`;
+  }
+
+  // ── 3. Extract all relevant data ───────────────────────────
+  const aiDet    = result.ai_detection  || {};
+  const tamp     = result.tampering     || {};
+  const face     = result.face_detection|| {};
+  const caption  = result.caption       || {};
+  const forensic = result.forensic      || {};
+  const meta     = result.metadata      || {};
+  const signals  = aiDet.signals        || {};
+  const reasons  = aiDet.reasons        || {};
+  const events   = result.shot_events   || [];
+
+  const riskScore   = clamp(forensic.risk_score ?? 50);
+  const aiConf      = clamp(aiDet.confidence ?? 50);
+  const aiStatus    = String(aiDet.status || "Unknown");
+  const analyzedAt  = state.analyzedAt ? new Date(state.analyzedAt) : new Date();
+  const fileName    = state.fileName   || "Unknown";
+  const fileSizeMB  = state.fileSize   ? (state.fileSize / (1024*1024)).toFixed(2) + " MB" : "N/A";
+  const sha256      = state.sha256     || "N/A";
+  const duration    = meta.duration    ? meta.duration.toFixed(1) + " s" : "N/A";
+  const fps         = meta.fps         ? meta.fps.toFixed(1) + " fps" : "N/A";
+  const frameCount  = meta.frame_count || meta.frames_analyzed || signals.frames_analyzed || "N/A";
+
+  // ── 4. Signal intelligence definitions ─────────────────────
+  // Describes each signal, thresholds, and what direction means what.
+  const SIGNAL_META = {
+    frequency_manipulation: {
+      label: "Frequency Domain Manipulation",
+      hi_threshold: 45,
+      hi_is: "AI",
+      hi_explain: "Elevated DCT/FFT coefficients in this range indicate processing artifacts characteristic of neural-network generation or heavy digital reconstruction. Camera-native video has a distinct, predictable frequency signature that is absent here.",
+      lo_explain: "Frequency spectrum matches natural optical camera capture. No neural processing or reconstruction artifacts present in the spatial-frequency domain.",
+    },
+    temporal_anomaly: {
+      label: "Temporal Frame Anomaly",
+      hi_threshold: 40,
+      hi_is: "AI",
+      hi_explain: "Inter-frame inconsistencies exceed natural motion thresholds. This pattern is associated with temporal splicing, deepfake blending, or insertion of synthetically generated frames that do not integrate smoothly into the motion flow.",
+      lo_explain: "Frame-to-frame transitions are smooth and continuous. Temporal flow is consistent with unmodified, uninterrupted video capture.",
+    },
+    facial_inconsistency: {
+      label: "Facial Geometry Inconsistency",
+      hi_threshold: 45,
+      hi_is: "AI",
+      hi_explain: "Facial landmark topology, texture boundaries, and geometric continuity show anomalies. These patterns are a hallmark of face-swap or generative face synthesis — particularly at skin-hair boundaries, eye corners, and chin contour.",
+      lo_explain: "Facial geometry and texture are geometrically consistent across frames. No face-swap boundaries, texture seams, or synthesis artifacts detected.",
+    },
+    gan_artifacts: {
+      label: "GAN Artifact Signature",
+      hi_threshold: 40,
+      hi_is: "AI",
+      hi_explain: "Statistical pixel-level patterns characteristic of Generative Adversarial Network outputs are present. GANs produce distinctive frequency and spatial distributions that differ measurably from natural optical capture.",
+      lo_explain: "No GAN-specific pixel statistics detected. Noise distribution and spatial patterns are consistent with optical sensor capture rather than generative synthesis.",
+    },
+    eye_region_manipulation: {
+      label: "Eye Region Synthesis",
+      hi_threshold: 45,
+      hi_is: "AI",
+      hi_explain: "The periocular region exhibits synthesis artifacts. Rendering the eye is computationally challenging for deepfake models, making anomalies here particularly diagnostic — irregular reflections, inconsistent iris texture, or unnatural blinking dynamics.",
+      lo_explain: "Eye and periocular regions appear natural. Light reflections, iris texture, and pupil dynamics are consistent with genuine anatomical rendering.",
+    },
+    color_space_anomaly: {
+      label: "Color Space Anomaly",
+      hi_threshold: 40,
+      hi_is: "AI",
+      hi_explain: "Color channel distributions deviate from natural camera response curves. AI-generated or AI-edited content often exhibits characteristic color statistics — unusual channel correlations or histogram shapes — due to synthetic rendering pipelines.",
+      lo_explain: "Color channel distributions fall within normal ranges for natural video. No synthetic color rendering or AI-based color grading artifacts detected.",
+    },
+    biological_signals: {
+      label: "Biological Signal Consistency",
+      hi_threshold: 50,
+      hi_is: "Real",
+      hi_explain: "Strong biological consistency detected — including natural skin texture micro-variation, subtle physiological expression dynamics, and plausible motion characteristics. These patterns are highly difficult to replicate convincingly with current generative models.",
+      lo_explain: "Biological signals are weak or absent. Natural physiological markers — micro-expressions, skin texture variation, natural head motion — are not prominently present. This may indicate a synthetic or heavily post-processed subject.",
+    },
+  };
+
+  // ── 5. Classify signals into AI vs Real buckets ─────────────
+  function classifySignals(signals) {
+    const aiIndicators   = [];
+    const realIndicators = [];
+
+    for (const [key, meta] of Object.entries(SIGNAL_META)) {
+      const raw_val = signals[key];
+      if (raw_val === undefined || raw_val === null) continue;
+      const val = Number(raw_val) || 0;
+
+      const isHigh = val >= meta.hi_threshold;
+      const pointsAI  = (isHigh && meta.hi_is === "AI") || (!isHigh && meta.hi_is === "Real");
+      const pointsReal = !pointsAI;
+
+      const explain = isHigh ? meta.hi_explain : meta.lo_explain;
+
+      if (pointsAI) {
+        aiIndicators.push({ key, label: meta.label, value: val, explain });
+      } else {
+        realIndicators.push({ key, label: meta.label, value: val, explain });
+      }
+    }
+
+    // Sort: strongest (most extreme relative to threshold) first
+    const strength = (s) => {
+      const m = SIGNAL_META[s.key];
+      return Math.abs(s.value - m.hi_threshold);
+    };
+    aiIndicators.sort((a, b) => strength(b) - strength(a));
+    realIndicators.sort((a, b) => strength(b) - strength(a));
+
+    return { aiIndicators, realIndicators };
+  }
+
+  // ── 6. Verdict engine ───────────────────────────────────────
+  function deriveVerdict() {
+    const statusLower = aiStatus.toLowerCase();
+    const isAiStatus  = /ai|fake|generated|synthetic|manipulated/.test(statusLower);
+    const isRealStatus = /real|authentic|genuine/.test(statusLower);
+
+    // High risk: explicit AI status + elevated confidence + elevated risk score
+    if (riskScore >= 65 || (isAiStatus && aiConf >= 60)) {
+      return {
+        level: "HIGH",
+        icon: "🚨",
+        label: "AI Generated / Manipulated",
+        colorVar: "var(--danger)",
+        colorHex: "#ff5e7a",
+        badgeText: "HIGH RISK",
+        recommendation:
+          "This content shows multiple convergent indicators of AI generation or manipulation. " +
+          "It should not be treated as authentic without independent verification. " +
+          "Manual forensic review by a qualified analyst is strongly recommended before any legal, editorial, or evidentiary use. " +
+          "Source tracing and metadata inspection should be performed as next steps.",
+      };
+    }
+
+    // Low risk: explicit real status + low confidence in AI detection + low risk score
+    if (riskScore <= 28 && (isRealStatus || aiConf <= 35)) {
+      return {
+        level: "LOW",
+        icon: "✅",
+        label: "Likely Authentic",
+        colorVar: "var(--primary-2)",
+        colorHex: "#4cffc2",
+        badgeText: "LOW RISK",
+        recommendation:
+          "No significant manipulation signals were detected. Signal distribution is consistent with genuine camera-captured footage. " +
+          "While automated analysis shows strong authenticity indicators, high-stakes decisions " +
+          "(legal proceedings, journalism) should supplement this with provenance verification and metadata review.",
+      };
+    }
+
+    // Medium risk: mixed or borderline
+    return {
+      level: "MID",
+      icon: "⚠️",
+      label: "Inconclusive — Verification Required",
+      colorVar: "var(--accent)",
+      colorHex: "#ffb24a",
+      badgeText: "MEDIUM RISK",
+      recommendation:
+        "Mixed or borderline forensic signals prevent a definitive classification. " +
+        "This outcome is common with heavily compressed footage, content mixing real and AI-generated elements, " +
+        "or edge-case lighting and capture conditions that challenge detection models. " +
+        "Expert manual review is recommended. Consider additional analysis: metadata inspection, " +
+        "compression artifact study, and source-chain tracing.",
+    };
+  }
+
+  // ── 7. Contradiction detection ──────────────────────────────
+  function detectContradiction(aiInds, realInds) {
+    const contradictions = [];
+
+    // AI status but majority of signals say Real
+    const statusLower = aiStatus.toLowerCase();
+    if (/real/.test(statusLower) && riskScore > 55) {
+      contradictions.push(
+        "The primary classifier labels this as 'Real', yet the aggregate risk score is elevated. " +
+        "This may indicate the classifier is underfitted for this specific type of content, or that subtle " +
+        "manipulation exists below its detection threshold."
+      );
+    }
+    if (/ai|fake/.test(statusLower) && realInds.length > aiInds.length) {
+      contradictions.push(
+        "The AI detection model flags this content as synthetic, yet a majority of individual forensic " +
+        "signals lean toward authenticity. This divergence can indicate a partially manipulated video " +
+        "(e.g., only certain frames or facial regions were synthesized) or compression-induced false positives."
+      );
+    }
+    if (clamp(tamp.confidence) > 55 && clamp(aiDet.confidence) < 40) {
+      contradictions.push(
+        "Tampering is detected with moderate-to-high confidence while AI generation confidence is low. " +
+        "This suggests the video may have been edited or manipulated through traditional means (cut, splice, " +
+        "color grading) rather than generated entirely by AI."
+      );
+    }
+
+    return contradictions;
+  }
+
+  // ── 8. Scenario classification ──────────────────────────────
+  function classifyScenario(aiInds, realInds) {
+    const tampConf  = clamp(tamp.confidence);
+    const facesAI   = face.faces_detected && riskScore > 50;
+    const ganHigh   = (Number(signals.gan_artifacts) || 0) > 50;
+    const faceHigh  = (Number(signals.facial_inconsistency) || 0) > 50;
+
+    if (riskScore >= 70 && ganHigh) {
+      return {
+        label: "Fully AI-Generated Content",
+        explain:
+          "The combination of strong GAN artifact signatures, elevated risk score, and broad signal agreement " +
+          "is most consistent with content produced entirely by a generative AI pipeline — such as a diffusion model, " +
+          "GAN, or neural video synthesis system. These systems produce characteristic statistical patterns across " +
+          "multiple domains (frequency, color, texture) simultaneously.",
+      };
+    }
+    if (faceHigh && facesAI && riskScore >= 45) {
+      return {
+        label: "Face-Swap / Deepfake on Real Footage",
+        explain:
+          "The underlying video footage shows characteristics of genuine capture, but the facial region " +
+          "contains strong synthesis markers. This pattern is consistent with a face-swap deepfake, " +
+          "where a real video has had one or more faces replaced using a neural rendering model. " +
+          "The temporal anomalies are localized rather than global.",
+      };
+    }
+    if (tampConf > 50 && riskScore >= 35) {
+      return {
+        label: "Edited / Spliced Real Footage",
+        explain:
+          "The evidence suggests authentic source footage that has undergone non-trivial editing — " +
+          "such as frame deletion, scene splicing, or AI-based visual enhancement. " +
+          "The content is not fully synthetic, but material alterations are likely present.",
+      };
+    }
+    if (riskScore <= 28) {
+      return {
+        label: "Authentic Camera-Captured Content",
+        explain:
+          "Signal distribution across all forensic dimensions is consistent with genuine optical camera capture. " +
+          "Natural noise, consistent temporal flow, and authentic biological signals collectively support the " +
+          "authenticity of this content. No generative or editing artifacts detected.",
+      };
+    }
+    return {
+      label: "Mixed / Ambiguous Origin",
+      explain:
+        "The forensic profile does not map cleanly to a single synthesis or editing scenario. " +
+        "This pattern can occur with: (1) heavily compressed video where compression itself introduces " +
+        "noise that mimics manipulation artifacts; (2) content mixing real and AI-generated elements; " +
+        "(3) unusual capture conditions (extreme lighting, non-standard cameras) that challenge detection models.",
+    };
+  }
+
+  // ── 9. Generate interpretation paragraphs ──────────────────
+  function buildInterpretation(verdict, scenario, contradictions, aiInds, realInds) {
+    const modelAgreement = reasons.model_agreement
+      ? `<div class="model-agreement"><strong>Model Consensus:</strong> ${esc(reasons.model_agreement)}</div>`
+      : "";
+
+    const contrHtml = contradictions.length
+      ? contradictions.map(c => `
+          <div class="contradiction-box">
+            <span class="contradiction-icon">⚡</span>
+            <span>${esc(c)}</span>
+          </div>`).join("")
+      : "";
+
+    const topFactorsHtml = buildTopFactors();
+
+    const signalBalance = aiInds.length > realInds.length
+      ? `Signal balance leans toward <strong>manipulation</strong> (${aiInds.length} suspicious vs ${realInds.length} authentic signals).`
+      : aiInds.length < realInds.length
+      ? `Signal balance leans toward <strong>authenticity</strong> (${realInds.length} authentic vs ${aiInds.length} suspicious signals).`
+      : `Signal balance is <strong>equal</strong> (${aiInds.length} suspicious and ${realInds.length} authentic signals).`;
+
+    return `
+      <div class="interp-scenario">⚙ Scenario: ${esc(scenario.label)}</div>
+      <div class="interp-body">
+        <p>${esc(scenario.explain)}</p>
+        <p>${signalBalance} The aggregate risk score is <strong>${riskScore.toFixed(0)}/100</strong>,
+        placing this video in the <strong>${verdict.level === "HIGH" ? "high-risk" : verdict.level === "LOW" ? "low-risk" : "borderline"}</strong> category.</p>
+        ${reasons.face_context ? `<p><em>${esc(reasons.face_context)}</em></p>` : ""}
+      </div>
+      ${modelAgreement}
+      ${contrHtml}
+      ${topFactorsHtml}
+    `;
+  }
+
+  function buildTopFactors() {
+    const factors = reasons.top_factors || [];
+    if (!factors.length) return "";
+    const items = factors.map((f, i) => `
+      <div class="factor-item">
+        <span class="factor-rank">#${i+1}</span>
+        ${esc(f)}
+      </div>`).join("");
+    return `
+      <div style="margin-top:16px;">
+        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;font-weight:700;">Top Contributing Factors</div>
+        <div class="top-factors">${items}</div>
+      </div>`;
+  }
+
+  // ── 10. Render indicator item ───────────────────────────────
+  function renderIndicatorItem(ind, type) {
+    const cls = type === "AI" ? "indicator-ai" : "indicator-real";
+    return `
+      <div class="indicator-item ${cls}">
+        <div class="indicator-item-header">
+          <span class="indicator-name">${esc(ind.label)}</span>
+          <span class="indicator-value">${ind.value.toFixed(1)}/100</span>
+        </div>
+        <div class="indicator-explain">${esc(ind.explain)}</div>
+      </div>`;
+  }
+
+  // Also render text indicators from the reasons object (from actual model outputs)
+  function renderTextIndicators(list, type) {
+    if (!list || !list.length) return "";
+    const cls = type === "AI" ? "indicator-ai" : "indicator-real";
+    return list.map(item => `
+      <div class="indicator-item ${cls}" style="padding:10px 14px;">
+        <div class="indicator-explain">${esc(item)}</div>
+      </div>`).join("");
+  }
+
+  // ── 11. Build observations section ─────────────────────────
+  function buildObservations() {
+    const tampType   = esc(tamp.tampering_type || "Not Detected");
+    const tampConf   = clamp(tamp.confidence);
+    const faceCount  = face.total_faces || 0;
+    const faceAlert  = esc(face.alert || "None");
+    const capText    = caption.caption ? esc(caption.caption.substring(0,200)) + (caption.caption.length > 200 ? "…" : "") : "N/A";
+    const capConf    = clamp(caption.confidence);
+    const shotCount  = events.length;
+    const durText    = esc(duration);
+
+    const tampColor  = tampConf > 55
+      ? "var(--danger)"
+      : tampConf > 30
+      ? "var(--accent)"
+      : "var(--primary-2)";
+
+    const faceColor  = faceCount > 0
+      ? (riskScore > 50 ? "var(--accent)" : "var(--primary)")
+      : "var(--muted)";
+
+    const tampDetail = [];
+    if (tamp.frame_duplication) tampDetail.push("Frame duplication detected");
+    if (tamp.frame_removal)     tampDetail.push("Frame removal detected");
+    if (tamp.temporal_inconsistency) tampDetail.push("Temporal inconsistency detected");
+    const tampDetailStr = tampDetail.length ? tampDetail.join("; ") : "No specific tampering patterns detected";
+
+    return `
+      <div class="obs-grid">
+        <div class="obs-card">
+          <div class="obs-label">Tampering Type</div>
+          <div class="obs-value" style="color:${tampColor}">${tampType}</div>
+          <div class="obs-detail">Confidence: ${pct(tampConf)}<br>${tampDetailStr}</div>
+        </div>
+        <div class="obs-card">
+          <div class="obs-label">Face Detection</div>
+          <div class="obs-value" style="color:${faceColor}">${faceCount > 0 ? faceCount + " face" + (faceCount === 1 ? "" : "s") : "None detected"}</div>
+          <div class="obs-detail">Privacy alert: ${faceAlert}<br>Confidence: ${pct(face.confidence)}</div>
+        </div>
+        <div class="obs-card">
+          <div class="obs-label">Video Caption</div>
+          <div class="obs-value" style="font-size:.82rem;font-weight:600;">${capText}</div>
+          <div class="obs-detail">Caption confidence: ${pct(capConf)}</div>
+        </div>
+        <div class="obs-card">
+          <div class="obs-label">Shot Events</div>
+          <div class="obs-value">${shotCount} shot${shotCount === 1 ? "" : "s"}</div>
+          <div class="obs-detail">Duration: ${durText}<br>Sampled: ${frameCount} frames @ ${esc(fps)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── 12. Risk bar gradient ───────────────────────────────────
+  function riskGradient(score) {
+    if (score <= 30)  return "linear-gradient(90deg, #4cffc2, #2ad4ff)";
+    if (score <= 60)  return "linear-gradient(90deg, #2ad4ff, #ffb24a)";
+    return                   "linear-gradient(90deg, #ffb24a, #ff5e7a)";
+  }
+
+  // ── 13. Executive summary text ──────────────────────────────
+  function buildExecutiveSummary(verdict) {
+    const systemSummary = reasons.summary || "";
+    let text = "";
+
+    if (systemSummary) {
+      text = systemSummary;
+    } else {
+      const level = verdict.level;
+      if (level === "HIGH") {
+        text = `This video has been assessed as high-risk for AI generation or digital manipulation. ` +
+          `Multiple independent forensic signals converge on this conclusion, with an aggregate risk score ` +
+          `of ${riskScore.toFixed(0)}/100 and a primary AI detection confidence of ${pct(aiConf)}.`;
+      } else if (level === "LOW") {
+        text = `This video presents characteristics consistent with authentic, camera-captured content. ` +
+          `The forensic signal profile shows no significant indicators of AI generation or manipulation, ` +
+          `with a low aggregate risk score of ${riskScore.toFixed(0)}/100.`;
+      } else {
+        text = `This video produced a mixed forensic signal profile that does not conclusively favor ` +
+          `either authentic or synthetic origin. The aggregate risk score of ${riskScore.toFixed(0)}/100 ` +
+          `falls in a borderline range requiring further investigation.`;
+      }
+    }
+    return `<p class="executive-summary-text">${esc(text)}</p>`;
+  }
+
+  // ── 14. Assemble and render the full report ─────────────────
+  function renderReport() {
+    const verdict           = deriveVerdict();
+    const { aiIndicators, realIndicators } = classifySignals(signals);
+    const contradictions    = detectContradiction(aiIndicators, realIndicators);
+    const scenario          = classifyScenario(aiIndicators, realIndicators);
+    const interpHTML        = buildInterpretation(verdict, scenario, contradictions, aiIndicators, realIndicators);
+
+    // Merge signal-based indicators with model-generated text indicators
+    const modelAiTexts   = reasons.ai_indicators   || [];
+    const modelRealTexts = reasons.real_indicators  || [];
+
+    const dateStr = analyzedAt.toLocaleString("en-GB", {
+      day:"2-digit", month:"short", year:"numeric",
+      hour:"2-digit", minute:"2-digit", second:"2-digit"
+    });
+
+    const html = `
+      <!-- ══ Report Header ════════════════════════════════════ -->
+      <div class="report-header">
+        <div class="header-logo">
+          <div class="logo-mark">🛡</div>
+          <div class="logo-text">VisionGuard<br>AI</div>
+        </div>
+        <div class="header-meta">
+          <div class="header-meta-title">VisionGuard AI — Forensic Analysis Report</div>
+          <div class="header-meta-sub">Automated Video Authenticity &amp; Deepfake Assessment</div>
+          <div class="header-meta-grid">
+            <div class="meta-item">
+              <div class="meta-item-label">Analysis Date</div>
+              <div class="meta-item-value">${esc(dateStr)}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-item-label">File Name</div>
+              <div class="meta-item-value" title="${esc(fileName)}">${esc(fileName)}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-item-label">File Size</div>
+              <div class="meta-item-value">${esc(fileSizeMB)}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-item-label">SHA-256</div>
+              <div class="meta-item-value" style="font-family:'JetBrains Mono',monospace;font-size:.7rem;" title="${esc(sha256)}">${sha256.substring(0,20)}…</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-item-label">Duration</div>
+              <div class="meta-item-value">${esc(duration)}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-item-label">Frames Sampled</div>
+              <div class="meta-item-value">${esc(String(frameCount))} @ ${esc(fps)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Section 1: Executive Summary ════════════════════ -->
+      <div class="report-section" style="--section-accent:${verdict.colorHex}">
+        <div class="section-header">
+          <div class="section-title">1. Executive Summary</div>
+          <div class="section-badge" style="color:${verdict.colorHex};border-color:${verdict.colorHex};background:${verdict.colorHex}18;">
+            ${verdict.badgeText}
+          </div>
+        </div>
+
+        <div class="verdict-banner" style="border-color:${verdict.colorHex}40;background:${verdict.colorHex}0d;">
+          <div class="verdict-icon">${verdict.icon}</div>
+          <div class="verdict-label" style="color:${verdict.colorHex}">${esc(verdict.label)}</div>
+          <div class="verdict-conf" style="color:${verdict.colorHex}">
+            ${pct(aiConf)}
+            <small>AI Detection Confidence</small>
+          </div>
+        </div>
+
+        ${buildExecutiveSummary(verdict)}
+
+        <div class="risk-meter" style="margin-top:16px;">
+          <div class="risk-meter-label">Risk Score</div>
+          <div class="risk-track">
+            <div class="risk-fill" style="width:${riskScore}%;background:${riskGradient(riskScore)};"></div>
+          </div>
+          <div class="risk-value" style="color:${verdict.colorHex}">${riskScore.toFixed(0)}/100</div>
+        </div>
+      </div>
+
+      <!-- ══ Section 2: AI / Fake Indicators ══════════════════ -->
+      <div class="report-section" style="--section-accent:var(--danger)">
+        <div class="section-header">
+          <div class="section-title">2. 🚨 AI / Fake Indicators</div>
+          <div class="section-badge" style="color:var(--danger);border-color:rgba(255,94,122,.4);background:rgba(255,94,122,.08);">
+            ${aiIndicators.length + modelAiTexts.length} signal${aiIndicators.length + modelAiTexts.length === 1 ? "" : "s"}
+          </div>
+        </div>
+
+        ${aiIndicators.length || modelAiTexts.length ? `
+          <div class="indicator-list">
+            ${aiIndicators.map(i => renderIndicatorItem(i, "AI")).join("")}
+            ${renderTextIndicators(modelAiTexts, "AI")}
+          </div>
+          <p class="section-note">These signals suggest possible AI generation or manipulation</p>
+        ` : `
+          <p style="color:var(--muted);font-size:.88rem;">No significant AI-generation signals detected across the forensic signal set.</p>
+          <p class="section-note">Absence of AI indicators supports content authenticity</p>
+        `}
+      </div>
+
+      <!-- ══ Section 3: Real / Authentic Indicators ════════════ -->
+      <div class="report-section" style="--section-accent:var(--primary-2)">
+        <div class="section-header">
+          <div class="section-title">3. ✅ Real / Authentic Indicators</div>
+          <div class="section-badge" style="color:var(--primary-2);border-color:rgba(76,255,194,.35);background:rgba(76,255,194,.07);">
+            ${realIndicators.length + modelRealTexts.length} signal${realIndicators.length + modelRealTexts.length === 1 ? "" : "s"}
+          </div>
+        </div>
+
+        ${realIndicators.length || modelRealTexts.length ? `
+          <div class="indicator-list">
+            ${realIndicators.map(i => renderIndicatorItem(i, "Real")).join("")}
+            ${renderTextIndicators(modelRealTexts, "Real")}
+          </div>
+          <p class="section-note">These signals are consistent with genuine video characteristics</p>
+        ` : `
+          <p style="color:var(--muted);font-size:.88rem;">No dominant authenticity signals detected in this analysis.</p>
+          <p class="section-note">Low authenticity signal count increases suspicion of synthetic origin</p>
+        `}
+      </div>
+
+      <!-- ══ Section 4: Additional Observations ════════════════ -->
+      <div class="report-section" style="--section-accent:var(--primary)">
+        <div class="section-header">
+          <div class="section-title">4. 📊 Additional Observations</div>
+        </div>
+        ${buildObservations()}
+      </div>
+
+      <!-- ══ Section 5: Forensic Interpretation ════════════════ -->
+      <div class="report-section" style="--section-accent:var(--accent)">
+        <div class="section-header">
+          <div class="section-title">5. 🧠 Forensic Interpretation</div>
+        </div>
+        ${interpHTML}
+      </div>
+
+      <!-- ══ Section 6: Final Verdict ═════════════════════════ -->
+      <div class="report-section" style="--section-accent:${verdict.colorHex}">
+        <div class="section-header">
+          <div class="section-title">6. 🧾 Final Verdict</div>
+        </div>
+
+        <div class="final-verdict-box" style="border-color:${verdict.colorHex}55;background:${verdict.colorHex}08;">
+          <div class="final-verdict-header" style="color:${verdict.colorHex}">
+            ${verdict.icon} ${esc(verdict.label)}
+          </div>
+          <div class="final-verdict-sub" style="color:${verdict.colorHex}aa;">
+            ${esc(aiStatus)} — ${pct(aiConf)} confidence — Risk ${riskScore.toFixed(0)}/100
+          </div>
+          <div class="recommendation">
+            <strong>Analyst Recommendation</strong>
+            ${esc(verdict.recommendation)}
+          </div>
+        </div>
+
+        <div class="signature-row">
+          <div class="sig-box">
+            <div class="sig-label">Reviewed By (Analyst Signature)</div>
+            <div class="sig-line"></div>
+            <div class="sig-name">Name / Title</div>
+          </div>
+          <div class="sig-box">
+            <div class="sig-label">Date of Review</div>
+            <div class="sig-line"></div>
+            <div class="sig-name">${esc(analyzedAt.toLocaleDateString("en-GB", {day:"2-digit",month:"long",year:"numeric"}))}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Footer ═══════════════════════════════════════════ -->
+      <div class="report-footer">
+        <strong>Generated by VisionGuard AI</strong> &nbsp;·&nbsp;
+        Automated Forensic Analysis System &nbsp;·&nbsp;
+        ${esc(dateStr)} &nbsp;·&nbsp;
+        This report is generated automatically. Results should be interpreted alongside human expert review for critical decisions.
+      </div>
+    `;
+
+    document.getElementById("reportShell").innerHTML = html;
+  }
+
+  // ── Render ──────────────────────────────────────────────────
+  renderReport();
+  </script>
+</body>
+</html>

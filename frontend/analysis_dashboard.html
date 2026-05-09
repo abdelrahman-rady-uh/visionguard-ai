@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionGuard AI — Multi-Provider Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Design Tokens ──────────────────────────────────────── */
+    :root {
+      --bg: #070d16;
+      --bg-soft: #0e1726;
+      --ink: #f2f7ff;
+      --muted: #91a8c4;
+      --glass: rgba(19, 31, 52, 0.6);
+      --line: rgba(137, 170, 212, 0.18);
+      --primary: #2ad4ff;
+      --primary-2: #4cffc2;
+      --accent: #ffb24a;
+      --danger: #ff5e7a;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --t: 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+
+    body {
+      background:
+        radial-gradient(circle at 80% -10%, rgba(42,212,255,.18), transparent 36%),
+        radial-gradient(circle at 20% 115%, rgba(76,255,194,.12), transparent 30%),
+        linear-gradient(120deg, #050a12, var(--bg));
+      color: var(--ink);
+      font-family: "Manrope", sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,.15); }
+    ::-webkit-scrollbar-thumb { background: rgba(42,212,255,.3); border-radius: 999px; }
+
+    /* ── Ambient blobs ──────────────────────────────────────── */
+    .ambient {
+      position: fixed;
+      width: 420px; height: 420px;
+      filter: blur(80px);
+      opacity: .18;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .ambient-a { top: -140px; left: -100px; background: #2ad4ff; animation: floatA 12s ease-in-out infinite; }
+    .ambient-b { right: -140px; bottom: 20%; background: #4cffc2; animation: floatB 15s ease-in-out infinite; }
+
+    @keyframes floatA { 0%,100%{transform:translateY(0) translateX(0)} 50%{transform:translateY(-28px) translateX(12px)} }
+    @keyframes floatB { 0%,100%{transform:translateY(0) translateX(0)} 50%{transform:translateY(20px) translateX(-12px)} }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1200px, 94vw);
+      margin: 24px auto 48px;
+    }
+
+    /* ── Topbar ─────────────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100%{opacity:1;box-shadow:0 0 8px var(--primary)}
+      50%{opacity:.5;box-shadow:0 0 4px var(--primary)}
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-family: "Manrope", sans-serif;
+      font-weight: 700;
+      font-size: .86rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--t);
+      white-space: nowrap;
+    }
+
+    .btn-ghost {
+      border-color: var(--line);
+      background: rgba(11,18,31,.5);
+      color: var(--ink);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* ── Hero ───────────────────────────────────────────────── */
+    .hero { margin-bottom: 24px; }
+
+    .tag {
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: 1.8px;
+      color: var(--primary-2);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(1.5rem, 3vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.18;
+      letter-spacing: -.3px;
+      margin-bottom: 10px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: .94rem;
+      max-width: 640px;
+    }
+
+    /* ── Provider Status ────────────────────────────────────── */
+    .status-section {
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+
+    .status-section-title {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    #statusBar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: .8rem;
+      background: rgba(11,18,31,.5);
+      color: var(--ink);
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--primary-2);
+      flex-shrink: 0;
+    }
+
+    .status-dot.offline { background: var(--danger); }
+
+    .status-dot.loading {
+      background: var(--accent);
+      animation: dotPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* ── Upload Panel ───────────────────────────────────────── */
+    .upload-panel {
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+
+    .upload-area {
+      border: 1.5px dashed rgba(72,199,255,.45);
+      background: linear-gradient(145deg, rgba(13,24,41,.7), rgba(8,15,27,.75));
+      border-radius: var(--radius-md);
+      padding: 44px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--t);
+    }
+
+    .upload-area:hover,
+    .upload-area.dragover {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(42,212,255,.1), 0 8px 32px rgba(42,212,255,.1);
+      transform: translateY(-2px);
+    }
+
+    .upload-icon {
+      font-size: 2.8rem;
+      display: block;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 0 14px rgba(42,212,255,.5));
+      line-height: 1;
+    }
+
+    .upload-text {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 5px;
+    }
+
+    .upload-hint {
+      font-size: .84rem;
+      color: var(--muted);
+    }
+
+    #videoInput { display: none; }
+
+    /* ── Messages ───────────────────────────────────────────── */
+    #messagesContainer { margin-bottom: 14px; }
+
+    .message {
+      padding: 13px 18px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      font-size: .88rem;
+      animation: slideIn .3s ease;
+      border: 1px solid;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .message.success {
+      background: rgba(76,255,194,.07);
+      color: var(--primary-2);
+      border-color: rgba(76,255,194,.3);
+    }
+
+    .message.error {
+      background: rgba(255,94,122,.07);
+      color: #ff8099;
+      border-color: rgba(255,94,122,.3);
+    }
+
+    .message.info {
+      background: rgba(42,212,255,.07);
+      color: var(--primary);
+      border-color: rgba(42,212,255,.25);
+    }
+
+    @keyframes slideIn {
+      from { opacity:0; transform:translateY(-6px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── Results ────────────────────────────────────────────── */
+    .hidden { display: none !important; }
+
+    .section-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: .74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* Video */
+    .video-wrap {
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    #videoPreview {
+      width: 100%;
+      max-width: 580px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid rgba(42,212,255,.3);
+      background: #000;
+      display: block;
+      box-shadow: 0 0 18px rgba(42,212,255,.15);
+    }
+
+    /* Aggregation Summary */
+    .aggregation-summary {
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .summary-item {
+      text-align: center;
+      padding: 18px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(11,18,31,.5);
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+
+    .summary-item:hover {
+      border-color: rgba(42,212,255,.35);
+      box-shadow: 0 4px 16px rgba(42,212,255,.08);
+    }
+
+    .summary-value {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: block;
+      margin-bottom: 5px;
+      line-height: 1;
+    }
+
+    .summary-label {
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted);
+    }
+
+    /* Anomalies */
+    #anomaliesSection {
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+    }
+
+    .anomalies-title {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .anomaly-item {
+      background: rgba(255,178,74,.06);
+      border: 1px solid rgba(255,178,74,.22);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: .84rem;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    /* Providers Grid */
+    .providers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .provider-card {
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      transition: all var(--t);
+      animation: panelIn .5s ease-out both;
+    }
+
+    .provider-card:hover {
+      border-color: rgba(42,212,255,.38);
+      box-shadow: 0 8px 24px rgba(42,212,255,.1);
+      transform: translateY(-2px);
+    }
+
+    .provider-card.success { border-left: 3px solid var(--primary-2); }
+    .provider-card.error   { border-left: 3px solid var(--danger); opacity: .78; }
+
+    @keyframes panelIn {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .provider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .provider-name {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .provider-status {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .provider-status.success {
+      background: rgba(76,255,194,.1);
+      color: var(--primary-2);
+      border: 1px solid rgba(76,255,194,.32);
+    }
+
+    .provider-status.error {
+      background: rgba(255,94,122,.1);
+      color: var(--danger);
+      border: 1px solid rgba(255,94,122,.32);
+    }
+
+    .confidence-bar { margin-bottom: 14px; }
+
+    .confidence-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: .8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .confidence-value {
+      color: var(--primary);
+      font-weight: 700;
+      font-family: "Space Grotesk", sans-serif;
+    }
+
+    .bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(77,101,136,.22);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-2), var(--primary));
+      border-radius: 999px;
+      transition: width .7s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 0 10px rgba(42,212,255,.35);
+    }
+
+    .provider-result {
+      font-size: .84rem;
+      color: #c8d8ef;
+      line-height: 1.65;
+      background: rgba(11,18,31,.5);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+      border: 1px solid var(--line);
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .provider-meta {
+      font-size: .76rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .error-message {
+      background: rgba(255,94,122,.07);
+      border: 1px solid rgba(255,94,122,.22);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-size: .84rem;
+      color: #ff8099;
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(42,212,255,.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .summary-grid { grid-template-columns: repeat(2,1fr); }
+      .providers-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .shell { width: 100%; padding: 0 12px; }
+      h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <div class="shell">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <a href="/" class="brand">
+        <span class="brand-dot"></span>
+        VisionGuard AI
+      </a>
+      <nav class="nav-links">
+        <a href="/" class="btn btn-ghost">← Home</a>
+        <a href="/upload" class="btn btn-ghost">Upload</a>
+        <a href="/forensics" class="btn btn-ghost">Forensics</a>
+      </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <p class="tag">Multi-Provider Analysis Engine</p>
+      <h1>AI Video Intelligence</h1>
+      <p class="lead">Aggregate results from multiple detection providers for comprehensive deepfake detection and video authenticity scoring.</p>
+    </section>
+
+    <!-- Provider status -->
+    <div class="status-section">
+      <div class="status-section-title">Provider Status</div>
+      <div id="statusBar">
+        <div class="status-item">
+          <div class="status-dot loading"></div>
+          Loading providers…
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="messagesContainer"></div>
+
+    <!-- Upload Panel -->
+    <div class="upload-panel">
+      <div class="upload-area" id="uploadArea">
+        <span class="upload-icon">🎬</span>
+        <div class="upload-text">Drop video here or click to select</div>
+        <div class="upload-hint">Supports MP4, AVI, MOV, MKV, WEBM — up to 1 GB</div>
+        <input type="file" id="videoInput" accept="video/*">
+      </div>
+    </div>
+
+    <!-- Results (hidden until analysis completes) -->
+    <div id="resultsSection" class="hidden">
+
+      <div class="section-title">Analysis Results</div>
+
+      <div class="video-wrap">
+        <video id="videoPreview" controls></video>
+      </div>
+
+      <div id="aggregationSummary" class="aggregation-summary">
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-value" id="overallConfidence">--</span>
+            <span class="summary-label">Overall Confidence</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-value" id="providerCount">0</span>
+            <span class="summary-label">Providers</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-value" id="successCount">0</span>
+            <span class="summary-label">Successful</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-value" id="failureCount">0</span>
+            <span class="summary-label">Failed</span>
+          </div>
+        </div>
+
+        <div id="anomaliesSection">
+          <div class="anomalies-title">⚠ Anomalies &amp; Issues</div>
+          <div id="anomaliesList"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Provider Analysis</div>
+      <div class="providers-grid" id="providersGrid"></div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ── Application state (unchanged) ─────────────────────── */
+    const appState = {
+      currentVideo: null,
+      analysisResults: null,
+      isAnalyzing: false,
+      providers: {},
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initializeEventListeners();
+      await loadProviderStatus();
+    });
+
+    function initializeEventListeners() {
+      const uploadArea = document.getElementById('uploadArea');
+      const videoInput = document.getElementById('videoInput');
+
+      uploadArea.addEventListener('click', () => videoInput.click());
+      videoInput.addEventListener('change', (e) => handleFileSelect(e));
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+          videoInput.files = e.dataTransfer.files;
+          handleFileSelect({ target: { files: e.dataTransfer.files } });
+        }
+      });
+    }
+
+    async function loadProviderStatus() {
+      try {
+        const response = await fetch('/api/analysis/status');
+        const data = await response.json();
+        if (data.status === 'success') {
+          appState.providers = data.providers;
+          updateStatusBar();
+        }
+      } catch (error) {
+        console.warn('Could not load provider status:', error);
+        document.getElementById('statusBar').innerHTML =
+          '<div class="status-item"><div class="status-dot offline"></div>Status unavailable</div>';
+      }
+    }
+
+    function updateStatusBar() {
+      const statusBar = document.getElementById('statusBar');
+      statusBar.innerHTML = '';
+
+      for (const [name, info] of Object.entries(appState.providers)) {
+        const statusItem = document.createElement('div');
+        statusItem.className = 'status-item';
+
+        const statusDot = document.createElement('div');
+        statusDot.className = `status-dot ${info.available ? '' : 'offline'}`;
+
+        statusItem.appendChild(statusDot);
+        statusItem.appendChild(document.createTextNode(
+          ` ${name} (${info.available ? 'Available' : 'Unavailable'})`
+        ));
+        statusBar.appendChild(statusItem);
+      }
+    }
+
+    async function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const validation = validateFile(file);
+      if (!validation.valid) {
+        showMessage(validation.error, 'error');
+        return;
+      }
+
+      appState.currentVideo = file;
+      await analyzeVideo(file);
+    }
+
+    function validateFile(file) {
+      const maxSize = 1024 * 1024 * 1024;
+      const allowedTypes = ['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-matroska', 'video/webm'];
+
+      if (!allowedTypes.some(type => file.type === type || file.name.match(/\.(mp4|avi|mov|mkv|webm)$/i))) {
+        return { valid: false, error: 'Invalid file format. Please upload MP4, AVI, MOV, MKV, or WEBM.' };
+      }
+
+      if (file.size > maxSize) {
+        return { valid: false, error: 'File is too large. Maximum size is 1 GB.' };
+      }
+
+      return { valid: true };
+    }
+
+    async function analyzeVideo(file) {
+      appState.isAnalyzing = true;
+      showMessage('<span class="loading-spinner"></span>Analyzing video with all providers…', 'info');
+
+      const formData = new FormData();
+      formData.append('video', file);
+      formData.append('video_id', `video_${Date.now()}`);
+
+      try {
+        const response = await fetch('/api/analysis/analyze/file', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          appState.analysisResults = data.data;
+          displayResults(file);
+          showMessage('✓ Analysis complete!', 'success');
+        } else {
+          showMessage(`Error: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        showMessage(`Error analyzing video: ${error.message}`, 'error');
+      } finally {
+        appState.isAnalyzing = false;
+      }
+    }
+
+    function displayResults(file) {
+      const resultsSection = document.getElementById('resultsSection');
+      resultsSection.classList.remove('hidden');
+
+      const videoPreview = document.getElementById('videoPreview');
+      const videoUrl = URL.createObjectURL(file);
+      videoPreview.src = videoUrl;
+
+      const results = appState.analysisResults;
+      document.getElementById('overallConfidence').textContent =
+        (results.overall_confidence * 100).toFixed(1) + '%';
+      document.getElementById('providerCount').textContent = results.provider_count;
+      document.getElementById('successCount').textContent = results.successful_analyses;
+      document.getElementById('failureCount').textContent = results.failed_analyses;
+
+      const anomaliesList = document.getElementById('anomaliesList');
+      const anomaliesSection = document.getElementById('anomaliesSection');
+
+      if (results.anomalies && results.anomalies.length > 0) {
+        anomaliesList.innerHTML = results.anomalies
+          .map(anomaly => `<div class="anomaly-item">${escapeHtml(anomaly)}</div>`)
+          .join('');
+        anomaliesSection.classList.remove('hidden');
+      } else {
+        anomaliesList.innerHTML = '<div style="color:var(--primary-2);font-size:.84rem;">✓ No anomalies detected</div>';
+      }
+
+      const providersGrid = document.getElementById('providersGrid');
+      providersGrid.innerHTML = results.providers
+        .map(provider => createProviderCard(provider))
+        .join('');
+
+      setTimeout(() => {
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    function createProviderCard(provider) {
+      const hasError = provider.error;
+      const confidence = provider.confidence || 0;
+      const cardClass = hasError ? 'error' : 'success';
+      const statusClass = hasError ? 'error' : 'success';
+
+      return `
+        <div class="provider-card ${cardClass}">
+          <div class="provider-header">
+            <div class="provider-name">${escapeHtml(provider.name)}</div>
+            <div class="provider-status ${statusClass}">
+              ${hasError ? 'ERROR' : 'SUCCESS'}
+            </div>
+          </div>
+
+          ${!hasError ? `
+            <div class="confidence-bar">
+              <div class="confidence-label">
+                <span>Confidence</span>
+                <span class="confidence-value">${(confidence * 100).toFixed(1)}%</span>
+              </div>
+              <div class="bar">
+                <div class="bar-fill" style="width:${confidence * 100}%"></div>
+              </div>
+            </div>
+
+            <div class="provider-result">
+              ${formatProviderResult(provider)}
+            </div>
+
+            ${provider.metadata ? `
+              <div class="provider-meta">
+                <strong>Metadata:</strong><br>
+                ${JSON.stringify(provider.metadata, null, 2)}
+              </div>
+            ` : ''}
+          ` : `
+            <div class="error-message">
+              ⚠ ${escapeHtml(provider.error || 'Analysis failed')}
+            </div>
+          `}
+
+          <div class="provider-meta" style="margin-top:10px;">
+            <small>${new Date(provider.timestamp).toLocaleString()}</small>
+          </div>
+        </div>
+      `;
+    }
+
+    function formatProviderResult(provider) {
+      if (typeof provider.result === 'string') {
+        return escapeHtml(provider.result);
+      } else if (typeof provider.result === 'object') {
+        if (provider.result.captions) {
+          return `
+            <strong>Captions:</strong> ${escapeHtml(provider.result.captions.result)}<br>
+            <strong>Quality:</strong> ${escapeHtml(provider.result.quality.result)}
+          `;
+        }
+        return JSON.stringify(provider.result, null, 2);
+      }
+      return 'No result';
+    }
+
+    function showMessage(text, type = 'info') {
+      const container = document.getElementById('messagesContainer');
+      const message = document.createElement('div');
+      message.className = `message ${type}`;
+      message.innerHTML = text;
+      container.appendChild(message);
+
+      setTimeout(() => {
+        message.style.opacity = '0';
+        message.style.transition = 'opacity .3s ease';
+        setTimeout(() => message.remove(), 300);
+      }, 5000);
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+  </script>
+</body>
+</html>

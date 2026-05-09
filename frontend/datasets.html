@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Datasets - VisionGuard AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .datasets-container {
+      margin-top: 3rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 2rem;
+    }
+    
+    .dataset-card {
+      background: rgba(16, 21, 30, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .dataset-card:hover {
+      border-color: rgba(42, 212, 255, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(42, 212, 255, 0.1);
+    }
+    
+    .dataset-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    
+    .dataset-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
+    
+    .dataset-size {
+      background: rgba(42, 212, 255, 0.1);
+      color: #2ad4ff;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    
+    .dataset-desc {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+      flex-grow: 1;
+    }
+    
+    .dataset-keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .keyword {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.6);
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+    }
+    
+    .dataset-actions {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .dataset-actions .btn {
+      flex: 1;
+      text-align: center;
+      padding: 0.8rem;
+    }
+    
+    /* Notification styling */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 1000;
+    }
+    
+    .toast {
+      background: rgba(16, 21, 30, 0.95);
+      border-left: 4px solid #2ad4ff;
+      border-radius: 4px;
+      padding: 1rem 1.5rem;
+      color: white;
+      margin-top: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .loader {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: rgba(255,255,255,0.5);
+      grid-column: 1 / -1;
+    }
+  </style>
+</head>
+<body class="page-upload">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+  
+  <main class="shell">
+    <header class="topbar reveal-up">
+      <div class="brand">VisionGuard AI</div>
+      <a href="/" class="btn btn-ghost" style="font-size: 0.9rem;">← Home</a>
+    </header>
+
+    <section class="hero reveal-up delay-1" style="text-align: center;">
+      <div>
+        <p class="tag">AI Training & Detection Datasets</p>
+        <h1>Dataset Intelligence API</h1>
+        <p class="lead">Manage and synchronize deepfake detection datasets. Models sync automatically to improve detection capability and reduce false positives.</p>
+      </div>
+    </section>
+
+    <section class="reveal-up delay-2">
+      <div id="datasets-grid" class="datasets-container">
+        <!-- Datasets will be injected here via JS -->
+        <div class="empty-state">
+          <div class="loader" style="width: 2rem; height: 2rem; border-width: 3px;"></div>
+          <p>Loading datasets from API...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <div id="toast-container" class="toast-container"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = document.getElementById('datasets-grid');
+      
+      try {
+        const response = await fetch('/api/datasets');
+        const data = await response.json();
+        
+        if (data.datasets && data.datasets.length > 0) {
+          grid.innerHTML = ''; // clear loader
+          
+          data.datasets.forEach(dataset => {
+            const card = document.createElement('div');
+            card.className = 'dataset-card';
+            
+            // Format keywords safely
+            let keywordsHtml = '';
+            if (dataset.keywords && dataset.keywords.length > 0) {
+              const kwList = Array.isArray(dataset.keywords) ? dataset.keywords : dataset.keywords.split(',');
+              keywordsHtml = `
+                <div class="dataset-keywords">
+                  ${kwList.map(k => `<span class="keyword">${k.replace('subject > ', '').replace('data type > ', '').trim()}</span>`).join('')}
+                </div>
+              `;
+            }
+            
+            card.innerHTML = `
+              <div class="dataset-header">
+                <h3 class="dataset-title">${dataset.name}</h3>
+                <span class="dataset-size">${dataset.size || 'Unknown size'}</span>
+              </div>
+              <p class="dataset-desc">${dataset.description || 'No description available.'}</p>
+              ${keywordsHtml}
+              <div class="dataset-actions">
+                ${dataset.url ? `<a href="${dataset.url}" target="_blank" class="btn btn-ghost" style="font-size: 0.8rem;">View Source</a>` : ''}
+                <button class="btn btn-solid sync-btn" data-id="${dataset.id}" style="font-size: 0.8rem;">Sync to AI Model</button>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+          
+          // Add event listeners to sync buttons
+          document.querySelectorAll('.sync-btn').forEach(btn => {
+            btn.addEventListener('click', handleSync);
+          });
+        } else {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <p>No datasets available. Configure metadata files to connect datasets.</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Error fetching datasets:', err);
+        grid.innerHTML = `
+          <div class="empty-state" style="color: #ff5e7a;">
+            <p>Error loading datasets API.</p>
+          </div>
+        `;
+      }
+    });
+    
+    async function handleSync(e) {
+      const btn = e.target;
+      const datasetId = btn.getAttribute('data-id');
+      const originalText = btn.innerHTML;
+      
+      btn.innerHTML = `<span class="loader"></span> Syncing...`;
+      btn.disabled = true;
+      
+      try {
+        const res = await fetch(`/api/datasets/${datasetId}/sync`, { method: 'POST' });
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+          showToast(`✅ ${data.message}`);
+          btn.innerHTML = `Synced ✓`;
+          btn.style.background = 'rgba(76, 255, 194, 0.2)';
+          btn.style.color = '#4cffc2';
+          btn.style.borderColor = 'rgba(76, 255, 194, 0.4)';
+        } else {
+          showToast(`❌ Error: ${data.error || 'Failed to sync'}`);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      } catch (err) {
+        showToast(`❌ Connection error during sync`);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+    
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = message;
+      container.appendChild(toast);
+      
+      // Trigger animation
+      setTimeout(() => toast.classList.add('show'), 10);
+      
+      // Remove after 4 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+  </script>
+</body>
+</html>

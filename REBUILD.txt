@@ -1,0 +1,20 @@
+VisionGuard AI - Rebuild Instructions
+
+Disk space ran out before I could finish the rebuild script.
+Free up some disk space, then:
+
+1. Open PowerShell in this folder
+2. Run:
+   pip install python-docx matplotlib numpy scipy Pillow
+3. Navigate to the outputs folder (in AppData/Claude/...)
+4. Run each script in order:
+   python make_figures.py
+   python build_report.py
+   python part2_chapters_1_2.py
+   python part3_chapters_3_4.py
+   python part4_chapters_5_6.py
+   python part5_chapters_7_8.py
+   python part6_visuals_appendices.py
+   python part7_pitch_website_refs.py
+
+The final report will be in this folder with all 33 figures.

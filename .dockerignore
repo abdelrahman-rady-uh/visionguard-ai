@@ -1,0 +1,25 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.git
+.gitignore
+README.md
+.env
+.venv
+venv/
+ENV/
+env/
+.vscode/
+.idea/
+*.log
+*.tmp
+uploads/
+logs/
+results/
+database/
+__pycache__/
+*.egg-info/</content>
+<parameter name="filePath">c:\Users\compumarts\Desktop\eea omar\.dockerignore

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Video Analysis Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #16213e;
+            --secondary: #0f3460;
+            --accent: #e94560;
+            --light: #f4f4f4;
+            --text: #1a1a2e;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(233, 69, 96, 0.5);
+            border-radius: 5px;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: var(--glass-bg);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1.5rem 2rem;
+            animation: slideDown 0.6s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Container */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 2rem 2rem;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.8s ease;
+            text-align: center;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .upload-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .upload-area {
+            border: 3px dashed var(--glass-border);
+            border-radius: 15px;
+            padding: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent);
+            background: rgba(233, 69, 96, 0.05);
+            transform: scale(1.02);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent);
+            background: rgba(233, 69, 96, 0.1);
+            transform: scale(1.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent);
+        }
+
+        .btn-export {
+            background: var(--accent);
+            color: white;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+        }
+
+        .btn-export:hover {
+            background: #d63a52;
+        }
+
+        /* Results Container */
+        .results-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            border-color: var(--accent);
+        }
+
+        .card h3 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Video Display */
+        .video-preview {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            background: #000;
+            max-height: 300px;
+            object-fit: cover;
+        }
+
+        /* Progress Bar */
+        .progress-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .timeline-time {
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 60px;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-type {
+            font-size: 0.8rem;
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 0.3rem;
+        }
+
+        .timeline-desc {
+            font-size: 0.95rem;
+            color: rgba(0, 0, 0, 0.8);
+            margin: 0.3rem 0;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Export Section */
+        .export-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .export-section h3 {
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Alert/Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #4ade80;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #fbbf24;
+            color: #1a1a2e;
+        }
+
+        .badge-error {
+            background: #f87171;
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            main {
+                padding: 100px 1rem 1rem;
+            }
+
+            .upload-section {
+                padding: 2rem;
+            }
+
+            .upload-area {
+                padding: 2rem;
+            }
+
+            .results-container {
+                gap: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .header-content {
+                padding: 0;
+            }
+
+            .export-buttons {
+                flex-direction: column;
+            }
+
+            .btn-export {
+                width: 100%;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Screenshot in timeline */
+        .timeline-screenshot {
+            margin-top: 0.5rem;
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-screenshot:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">🎬 VideoAnalytics Pro</div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="statusText">Ready to Analyze</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2>📹 Upload Your Video</h2>
+            <p>Drag and drop your video or click to browse</p>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📤</div>
+                <p class="upload-text">Click to upload or drag and drop</p>
+                <p style="font-size: 0.9rem; color: rgba(0,0,0,0.5);">MP4, AVI, MOV, MKV up to 1GB</p>
+            </div>
+            <input type="file" id="fileInput" accept="video/*">
+            <button class="btn btn-primary" id="analyzeBtn">Start Analysis</button>
+        </div>
+
+        <!-- Results Container -->
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <!-- Video Preview Card -->
+            <div class="card">
+                <h3><span class="card-icon">📹</span> Your Video</h3>
+                <video id="videoPreview" class="video-preview" controls></video>
+                <div style="padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.9rem;">
+                    <p><strong>File:</strong> <span id="fileName">-</span></p>
+                    <p><strong>Size:</strong> <span id="fileSize">-</span></p>
+                    <p><strong>Duration:</strong> <span id="fileDuration">-</span></p>
+                </div>
+            </div>
+
+            <!-- Analysis Results Card -->
+            <div class="card">
+                <h3><span class="card-icon">🎯</span> Analysis Results</h3>
+                <div id="analysisResults" class="loading">
+                    <div class="loading-spinner"></div>
+                    <span>Analyzing video...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Card -->
+        <div class="card hidden" id="timelineCard">
+            <h3><span class="card-icon">⏱️</span> Event Timeline</h3>
+            <div class="timeline" id="timelineContent"></div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="export-section hidden" id="exportSection">
+            <h3>📊 Export Analysis Report</h3>
+            <p style="margin-bottom: 1.5rem; color: rgba(0,0,0,0.7);">Download your comprehensive analysis report</p>
+            <div class="export-buttons">
+                <button class="btn btn-export" id="exportJSON">
+                    📋 Export as JSON
+                </button>
+                <button class="btn btn-export" id="exportPDF">
+                    📄 Export as PDF
+                </button>
+                <button class="btn btn-export" id="exportBoth">
+                    📦 Export Both
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentFile = null;
+        let analysisData = null;
+
+        // Setup upload area
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file && file.type.startsWith('video/')) {
+                currentFile = file;
+                analyzeBtn.textContent = '✓ Ready to Analyze';
+                analyzeBtn.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+            }
+        }
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (!currentFile) {
+                alert('Please select a video first');
+                return;
+            }
+
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<span class="loading"><div class="loading-spinner"></div> Analyzing...</span>';
+
+            try {
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('video', currentFile);
+
+                // Upload and analyze
+                const response = await fetch('/api/analysis/v2/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success' || data.data) {
+                    analysisData = data.data || data;
+                    displayResults(analysisData);
+                } else {
+                    alert('Analysis failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error uploading video: ' + error.message);
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Start Analysis';
+            }
+        });
+
+        function displayResults(data) {
+            // Show results container
+            document.getElementById('resultsContainer').style.display = 'grid';
+
+            // Display video preview
+            const videoPreview = document.getElementById('videoPreview');
+            const videoUrl = URL.createObjectURL(currentFile);
+            videoPreview.src = videoUrl;
+
+            // Display file info
+            document.getElementById('fileName').textContent = currentFile.name;
+            document.getElementById('fileSize').textContent = (currentFile.size / 1024 / 1024).toFixed(2) + ' MB';
+
+            // Display analysis results
+            displayAnalysisResults(data);
+
+            // Display timeline if available
+            if (data.timeline) {
+                displayTimeline(data.timeline);
+            }
+
+            // Show export section
+            document.getElementById('exportSection').classList.remove('hidden');
+
+            // Setup export buttons
+            setupExportButtons(data);
+        }
+
+        function displayAnalysisResults(data) {
+            const resultsDiv = document.getElementById('analysisResults');
+            let html = '';
+
+            // Caption Summary
+            if (data.caption_summary) {
+                html += `
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>📝 Caption Summary</span>
+                            <span class="badge badge-success">Analyzed</span>
+                        </div>
+                        <p style="margin-top: 0.5rem; color: rgba(0,0,0,0.8);">${data.caption_summary}</p>
+                    </div>
+                `;
+            }
+
+            // Confidence Scores
+            if (data.confidence_scores) {
+                html += '<h4 style="margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary);">Confidence Scores</h4>';
+                for (const [key, value] of Object.entries(data.confidence_scores)) {
+                    const percentage = Math.round(value * 100);
+                    html += `
+                        <div class="progress-item">
+                            <div class="progress-label">
+                                <span>${key.replace(/_/g, ' ').toUpperCase()}</span>
+                                <span>${percentage}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Detections
+            if (data.ai_detection || data.tampering || data.face_detection) {
+                html += '<h4 style="margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary);">Detections</h4>';
+
+                if (data.ai_detection) {
+                    const status = data.ai_detection.status === 'detected' ? '🚨 DETECTED' : '✅ CLEAR';
+                    const badge = data.ai_detection.status === 'detected' ? 'badge-error' : 'badge-success';
+                    html += `<p><span class="badge ${badge}">${status}</span> AI Detection</p>`;
+                }
+
+                if (data.tampering) {
+                    const risk = data.tampering.overall_risk || 0;
+                    const riskLevel = risk > 0.7 ? 'HIGH' : risk > 0.4 ? 'MEDIUM' : 'LOW';
+                    const badge = risk > 0.7 ? 'badge-error' : risk > 0.4 ? 'badge-warning' : 'badge-success';
+                    html += `<p><span class="badge ${badge}">Tampering Risk: ${riskLevel}</span></p>`;
+                }
+
+                if (data.face_detection) {
+                    const faces = data.face_detection.estimated_unique_people || 0;
+                    html += `<p>👤 Faces Detected: ${faces}</p>`;
+                }
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function displayTimeline(timelineData) {
+            const timelineCard = document.getElementById('timelineCard');
+            const timelineContent = document.getElementById('timelineContent');
+            
+            timelineCard.classList.remove('hidden');
+
+            let html = '';
+            const events = timelineData.timeline || [];
+
+            for (const event of events.slice(0, 20)) {  // Show first 20 events
+                let eventEmoji = '📍';
+                if (event.event_type === 'caption') eventEmoji = '📝';
+                else if (event.event_type === 'object_detection') eventEmoji = '🎯';
+                else if (event.event_type === 'face_detected') eventEmoji = '👤';
+                else if (event.event_type === 'tampering_alert') eventEmoji = '⚠️';
+
+                html += `
+                    <div class="timeline-item">
+                        <div class="timeline-time">${event.timestamp}</div>
+                        <div class="timeline-content">
+                            <span class="timeline-type">${eventEmoji} ${event.event_type.replace(/_/g, ' ').toUpperCase()}</span>
+                            <p class="timeline-desc">${event.description}</p>
+                            ${event.screenshot ? `<img src="${event.screenshot}" class="timeline-screenshot" alt="Screenshot">` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            timelineContent.innerHTML = html || '<p style="text-align: center; color: rgba(0,0,0,0.5);">No timeline events</p>';
+        }
+
+        function setupExportButtons(data) {
+            document.getElementById('exportJSON').addEventListener('click', () => exportReport('json', data));
+            document.getElementById('exportPDF').addEventListener('click', () => exportReport('pdf', data));
+            document.getElementById('exportBoth').addEventListener('click', () => exportReport('both', data));
+        }
+
+        async function exportReport(format, data) {
+            try {
+                const endpoint = format === 'json' ? '/api/analysis/v2/export/json' : format === 'pdf' ? '/api/analysis/v2/export/pdf' : '/api/analysis/v2/export/both';
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `analysis_report_${new Date().getTime()}.${format === 'json' ? 'json' : 'pdf'}`;
+                    a.click();
+                } else {
+                    alert('Export failed');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Error exporting report: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

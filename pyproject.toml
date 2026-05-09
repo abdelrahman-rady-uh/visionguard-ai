@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "video-analysis-system"
+version = "1.0.0"
+description = "A comprehensive video analysis application"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "Flask",
+    "numpy",
+    "opencv-python",
+    "Pillow",
+    "cryptography",
+    "transformers",
+    "torch",
+    "torchvision",
+    "python-dotenv"
+]
+
+[project.scripts]
+video-analysis = "app:main"
+
+[tool.setuptools]
+packages = ["backend"]
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"

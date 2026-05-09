@@ -1,0 +1,47 @@
+# Netlify Deployment Configuration
+# Build settings for frontend deployment
+
+[build]
+# Directory to deploy (frontend files)
+publish = "frontend"
+command = "echo 'Frontend is ready to deploy'"
+
+# Environment variables
+[build.environment]
+REACT_APP_API_URL = "https://your-render-app.onrender.com"
+
+# Redirect rules for SPA routing
+[[redirects]]
+from = "/*"
+to = "/analysis_dashboard.html"
+status = 200
+
+# Security headers
+[[headers]]
+for = "/*"
+[headers.values]
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "DENY"
+X-XSS-Protection = "1; mode=block"
+Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://your-render-app.onrender.com"
+Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache control for static assets
+[[headers]]
+for = "/frontend/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/frontend/analysis_dashboard.html"
+[headers.values]
+Cache-Control = "public, max-age=3600, must-revalidate"
+
+# CORS for API calls
+[[headers]]
+for = "/api/*"
+[headers.values]
+Access-Control-Allow-Origin = "https://your-netlify-app.netlify.app"
+Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+Access-Control-Allow-Headers = "Content-Type, Authorization"

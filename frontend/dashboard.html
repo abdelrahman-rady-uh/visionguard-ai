@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionGuard AI - Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-dashboard">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-c"></div>
+  <canvas id="particles" class="particles"></canvas>
+
+  <main class="shell shell-wide">
+    <header class="topbar reveal-up">
+      <a href="/" class="brand"><span class="brand-dot"></span>VisionGuard AI</a>
+      <div class="nav-links">
+        <div id="riskBadge" class="risk-badge">Pending</div>
+        <a href="/my-history" class="btn btn-ghost" id="historyNavLink" style="display:none">My History</a>
+        <a href="/upload" class="btn btn-ghost">New Analysis</a>
+        <div id="topbarUserWrap"></div>
+      </div>
+    </header>
+
+    <section class="command-hero reveal-up delay-1">
+      <div>
+        <p class="tag">AI Forensic Intelligence Command Center</p>
+        <h1>Video Authenticity Operations Dashboard</h1>
+        <p class="lead">Evidence review, model reasoning, risk scoring, timeline intelligence, and export workflows connected to the existing Flask analysis pipeline.</p>
+      </div>
+      <div class="hero-ops">
+        <div class="ops-ring"><span id="heroRiskValue">--</span><small>Risk Index</small></div>
+        <div class="ops-stack">
+          <span class="live-dot"></span>
+          <strong>Live Case Review</strong>
+          <span id="caseTimestamp">Awaiting evidence metadata</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="status-strip reveal-up delay-2">
+      <article class="status-card status-active"><span class="status-pulse"></span><div><strong>Pipeline Status</strong><small id="pipelineStatus">Analysis complete</small></div></article>
+      <article class="status-card"><span class="status-icon"></span><div><strong>Provider Health</strong><small id="providerHealth">Core forensic services online</small></div></article>
+      <article class="status-card"><span class="status-icon alert"></span><div><strong>Evidence Lock</strong><small>Encrypted upload chain preserved</small></div></article>
+      <article class="status-card"><span class="status-icon warn"></span><div><strong>Report State</strong><small>Ready for export</small></div></article>
+    </section>
+
+    <section class="dashboard-grid reveal-up delay-2">
+      <article class="panel panel-video intelligence-panel">
+        <div class="panel-title-row"><h3>Video Preview & Object Intelligence</h3><span class="mini-badge">Timeline-linked</span></div>
+        <div class="video-stage">
+          <video id="videoPreview" controls autoplay muted loop></video>
+          <canvas id="faceOverlay"></canvas>
+        </div>
+        <div class="timeline-scrubber">
+          <div id="eventMarkers" class="event-markers"></div>
+          <div id="timelineBar" class="timeline-bar"></div>
+        </div>
+        <div id="objectLegend" class="object-legend"></div>
+      </article>
+
+      <article class="panel score-center">
+        <div class="panel-title-row"><h3>Forensic Score Center</h3><span class="mini-badge">Animated</span></div>
+        <div id="scoreRings" class="score-rings"></div>
+      </article>
+
+      <article class="panel">
+        <h3>AI Reasoning Panel</h3>
+        <p id="captionText" class="result-text">-</p>
+        <div id="reasoningNarrative" class="reasoning-narrative"></div>
+      </article>
+
+      <article class="panel">
+        <h3>Core Findings</h3>
+        <div class="kv"><span>AI Generation</span><strong id="aiStatus">-</strong></div>
+        <div class="kv"><span>Tampering</span><strong id="tamperingText">-</strong></div>
+        <div class="kv"><span>Face Detection</span><strong id="faceText">-</strong></div>
+        <div class="kv"><span>Privacy Alert</span><strong id="privacyAlert">-</strong></div>
+        <details class="details-section">
+          <summary class="details-toggle">Forensic Breakdown</summary>
+          <div id="forensicsWrap" class="forensics-grid"></div>
+        </details>
+      </article>
+
+      <article class="panel" id="reasonsPanel" style="display:none">
+        <h3>Why This Verdict?</h3>
+        <p id="reasonsSummary" class="reasons-summary"></p>
+        <div id="reasonsAgreement" class="reasons-agreement"></div>
+        <div id="reasonsFaceCtx" class="reasons-face-ctx"></div>
+        <details class="reasons-details reasons-ai" open><summary>AI / Fake Indicators</summary><ul id="reasonsAiList" class="reasons-list"></ul></details>
+        <details class="reasons-details reasons-real" open><summary>Real / Authentic Indicators</summary><ul id="reasonsRealList" class="reasons-list"></ul></details>
+        <details class="reasons-details reasons-top"><summary>Top Contributing Signals</summary><ol id="reasonsTopList" class="reasons-list"></ol></details>
+      </article>
+
+      <article class="panel">
+        <h3>Confidence Scores</h3>
+        <div id="confidenceWrap"></div>
+      </article>
+
+      <article class="panel">
+        <h3>Forensic Signals</h3>
+        <div id="signalWrap" class="signal-grid"></div>
+      </article>
+
+      <article class="panel panel-timeline">
+        <div class="panel-title-row"><h3>Timeline Intelligence View</h3><span class="mini-badge">Click to seek</span></div>
+        <div id="timelineWrap" class="timeline"></div>
+      </article>
+
+      <article class="panel">
+        <h3>Explainability Panel</h3>
+        <div class="heatmap-stage"><div class="heatmap-grid"></div><div id="heatmapFocus" class="heatmap-focus"></div></div>
+        <div id="explainabilityText" class="result-text"></div>
+      </article>
+
+      <article class="panel">
+        <h3>Audio Forensics</h3>
+        <div id="waveform" class="waveform"></div>
+        <div class="kv"><span>Voice authenticity</span><strong id="voiceScore">Pending</strong></div>
+        <div class="kv"><span>Lip-sync mismatch</span><strong id="lipSyncScore">Pending</strong></div>
+        <p id="transcriptText" class="result-text audio-note">Transcript unavailable unless supplied by analysis providers.</p>
+      </article>
+
+      <article class="panel export-center">
+        <h3>Advanced Report Export</h3>
+        <div class="export-grid">
+          <button id="exportJSON" class="btn-action" title="Export as JSON">JSON Evidence</button>
+          <button id="exportPDF" class="btn-action" title="Export as PDF">PDF Brief</button>
+          <button id="fullScreen" class="btn-action" title="Fullscreen video">Fullscreen Video</button>
+          <a href="/forensic_report.html" target="_blank" class="btn-action" title="Generate detailed forensic report">Forensic Report</a>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h3>Face Blur Preview</h3>
+        <img id="blurPreview" alt="Face blur preview">
+      </article>
+    </section>
+  </main>
+  <script src="dashboard.js"></script>
+</body>
+</html>

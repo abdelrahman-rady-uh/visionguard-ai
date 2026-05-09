@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: visionguard-ai
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install -r requirements_deploy.txt
+    startCommand: gunicorn --workers 2 --bind 0.0.0.0:$PORT --timeout 120 "backend.app:app"
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_PATH
+        value: database/app.db
+      - key: UPLOAD_DIR
+        value: uploads
+      - key: RESULTS_DIR
+        value: results
+      - key: LOG_PATH
+        value: logs
+      - key: GOOGLE_CLIENT_ID
+        value: ""
+      - key: GOOGLE_CLIENT_SECRET
+        value: ""
+      - key: HUGGINGFACE_API_KEY
+        value: ""

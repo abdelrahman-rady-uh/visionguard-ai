@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionGuard AI - Forensic Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .landing-shell { position: relative; z-index: 1; width: min(1220px, 92vw); margin: 0 auto; }
+    .landing-nav { display:flex; align-items:center; justify-content:space-between; padding:22px 0; }
+    .landing-hero { min-height: calc(100vh - 84px); display:grid; grid-template-columns: minmax(0,1fr) 430px; gap:34px; align-items:center; padding-bottom:42px; }
+    .hero-copy h1 { font-size: clamp(3rem, 8vw, 6.8rem); line-height:.88; margin-bottom:22px; letter-spacing:0; }
+    .hero-copy .lead { max-width:760px; font-size:1.05rem; }
+    .hero-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:28px; }
+    .hero-visual { min-height:560px; border:1px solid rgba(137,170,212,.18); border-radius:22px; background:linear-gradient(145deg, rgba(11,22,42,.82), rgba(3,8,16,.88)); box-shadow:0 36px 90px rgba(0,0,0,.42); position:relative; overflow:hidden; backdrop-filter:blur(22px); }
+    .hero-visual::before { content:""; position:absolute; inset:42px; border:1px solid rgba(42,212,255,.2); border-radius:50%; box-shadow:0 0 0 42px rgba(42,212,255,.025), 0 0 0 86px rgba(76,255,194,.018); animation:scannerSpin 18s linear infinite; }
+    .hero-visual::after { content:""; position:absolute; left:12%; right:12%; top:49%; height:2px; background:linear-gradient(90deg, transparent, var(--primary), var(--primary-2), transparent); box-shadow:0 0 24px rgba(42,212,255,.7); animation:scan 3.5s linear infinite; }
+    .intel-card { position:absolute; border:1px solid rgba(137,170,212,.16); background:rgba(8,17,31,.78); border-radius:14px; padding:14px; backdrop-filter:blur(14px); }
+    .intel-card strong { display:block; font-family:"Space Grotesk",sans-serif; }
+    .intel-card small { color:var(--muted); }
+    .intel-card.a { top:32px; left:28px; right:92px; }
+    .intel-card.b { bottom:36px; left:28px; width:48%; }
+    .intel-card.c { right:28px; bottom:124px; width:42%; border-color:rgba(255,178,74,.26); }
+    .matrix { position:absolute; inset:160px 64px 170px; display:grid; grid-template-columns:repeat(6,1fr); gap:8px; opacity:.8; }
+    .matrix span { border:1px solid rgba(42,212,255,.16); background:rgba(42,212,255,.04); border-radius:6px; animation:breathe 2.4s ease-in-out infinite; }
+    .matrix span:nth-child(3n) { animation-delay:.35s; }
+    .matrix span:nth-child(4n) { animation-delay:.7s; }
+    .landing-section { padding:38px 0; }
+    .section-kicker { color:var(--primary-2); text-transform:uppercase; letter-spacing:1.6px; font-size:.75rem; font-weight:700; }
+    .feature-grid, .workflow-grid, .team-grid { display:grid; gap:14px; margin-top:18px; }
+    .feature-grid { grid-template-columns:repeat(4,1fr); }
+    .workflow-grid { grid-template-columns:repeat(5,1fr); }
+    .team-grid { grid-template-columns:repeat(3,1fr); }
+    .landing-card { border:1px solid rgba(137,170,212,.16); border-radius:14px; padding:18px; background:rgba(10,20,36,.66); backdrop-filter:blur(16px); min-height:130px; }
+    .landing-card b { display:block; font-family:"Space Grotesk",sans-serif; margin-bottom:8px; }
+    .landing-card p, .landing-card small { color:var(--muted); margin:0; font-size:.86rem; }
+    .stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:22px; }
+    .stat-tile { border:1px solid rgba(42,212,255,.18); border-radius:14px; padding:20px; background:rgba(42,212,255,.045); }
+    .stat-tile strong { display:block; font-family:"Space Grotesk",sans-serif; color:var(--primary); font-size:2rem; line-height:1; }
+    .user-widget { display:none; align-items:center; gap:12px; border:1px solid var(--line); border-radius:999px; padding:8px 14px 8px 8px; background:rgba(10,20,36,.72); }
+    .user-widget img, .user-widget-avatar-fallback { width:34px; height:34px; border-radius:50%; }
+    .user-widget-avatar-fallback { display:grid; place-items:center; background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#03101b; font-weight:800; }
+    .user-widget-name { display:block; font-size:.86rem; font-weight:700; }
+    .user-widget-links a { color:var(--primary); text-decoration:none; font-size:.76rem; }
+    .footer-text { color:var(--muted); padding:30px 0 44px; text-align:center; }
+    @media (max-width:980px){ .landing-hero{grid-template-columns:1fr}.hero-visual{min-height:420px}.feature-grid,.workflow-grid,.team-grid,.stat-row{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width:560px){ .landing-shell{width:100%;padding:0 14px}.landing-nav{flex-wrap:wrap;gap:12px}.feature-grid,.workflow-grid,.team-grid,.stat-row{grid-template-columns:1fr}.hero-actions .btn{width:100%}.hero-visual{min-height:360px}.intel-card.c{display:none} }
+  </style>
+</head>
+<body class="page-welcome">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+  <canvas id="particles" class="particles"></canvas>
+
+  <main class="landing-shell">
+    <nav class="landing-nav">
+      <a href="/" class="brand"><span class="brand-dot"></span>VisionGuard AI</a>
+      <div class="nav-links">
+        <a href="/forensics" class="btn btn-ghost">Forensics</a>
+        <a href="/datasets" class="btn btn-ghost">Datasets</a>
+        <button class="btn btn-ghost" id="loginBtn" onclick="loginWithGoogle()">Google Login</button>
+      </div>
+    </nav>
+
+    <section class="landing-hero">
+      <div class="hero-copy reveal-up">
+        <p class="tag">Enterprise AI Forensic Intelligence</p>
+        <h1>VisionGuard AI</h1>
+        <p class="lead">A premium video authenticity platform for encrypted uploads, deepfake detection, tampering analysis, face privacy review, event timelines, and investigator-ready reports.</p>
+        <div class="hero-actions">
+          <button class="btn btn-solid" onclick="startAnalysis()">Start Analysis</button>
+          <button class="btn btn-ghost" onclick="viewDatasets()">AI Datasets</button>
+          <button class="btn btn-ghost" onclick="viewDocumentation()">Capability Brief</button>
+        </div>
+        <div class="user-widget" id="userWidget">
+          <div id="userWidgetAvatarWrap"></div>
+          <div><span class="user-widget-name" id="userWidgetName"></span><div class="user-widget-links"><a href="/my-history">My History</a> <a href="/auth/logout">Logout</a></div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-tile"><strong>7</strong><small>AI forensic signal families</small></div>
+          <div class="stat-tile"><strong>AES</strong><small>Encrypted evidence storage</small></div>
+          <div class="stat-tile"><strong>PDF</strong><small>Executive report export</small></div>
+          <div class="stat-tile"><strong>Live</strong><small>Timeline-linked dashboard</small></div>
+        </div>
+      </div>
+      <div class="hero-visual reveal-up delay-2" aria-hidden="true">
+        <div class="matrix"></div>
+        <div class="intel-card a"><strong>Authenticity Engine</strong><small>Deepfake, tampering, caption, and privacy signals fused into one risk picture.</small></div>
+        <div class="intel-card b"><strong>Evidence Timeline</strong><small>Scene changes, face tracks, suspicious timestamps.</small></div>
+        <div class="intel-card c"><strong>Security State</strong><small>Encrypted upload chain and export-ready audit flow.</small></div>
+      </div>
+    </section>
+
+    <section class="landing-section">
+      <span class="section-kicker">Capabilities</span>
+      <div class="feature-grid">
+        <div class="landing-card"><b>AI Generation Detection</b><p>Model confidence, suspicious indicators, and authenticity counter-signals.</p></div>
+        <div class="landing-card"><b>Tampering Intelligence</b><p>Frame duplication, removal, and temporal inconsistency review.</p></div>
+        <div class="landing-card"><b>Privacy Forensics</b><p>Face detection, blur previews, and privacy alert assessment.</p></div>
+        <div class="landing-card"><b>Report Exports</b><p>JSON evidence, PDF briefs, screenshots, and detailed forensic reports.</p></div>
+      </div>
+    </section>
+
+    <section class="landing-section">
+      <span class="section-kicker">Workflow</span>
+      <div class="workflow-grid">
+        <div class="landing-card"><b>1. Upload</b><p>Drag and drop video evidence through the existing encrypted flow.</p></div>
+        <div class="landing-card"><b>2. Analyze</b><p>Run captioning, detection, tampering, privacy, and timeline modules.</p></div>
+        <div class="landing-card"><b>3. Inspect</b><p>Review scores, overlays, explanations, and suspicious timestamps.</p></div>
+        <div class="landing-card"><b>4. Export</b><p>Generate investigator-friendly evidence outputs.</p></div>
+        <div class="landing-card"><b>5. Archive</b><p>Keep authenticated analysis history available when login is configured.</p></div>
+      </div>
+    </section>
+
+    <section class="landing-section">
+      <span class="section-kicker">Development Team</span>
+      <div class="team-grid">
+        <div class="landing-card"><b>Eman Abushawish</b><p>202210872 - AI Detection & Video Analysis Specialist</p></div>
+        <div class="landing-card"><b>Layal Alhijawi</b><p>202210346 - Backend Architecture & Database Design</p></div>
+        <div class="landing-card"><b>Roz Abusini</b><p>202210075 - Frontend Development & UI/UX Design</p></div>
+      </div>
+    </section>
+
+    <footer class="footer-text">VisionGuard AI | Graduate Project | Enterprise-grade video forensics and intelligence platform</footer>
+  </main>
+
+  <script>
+    function startAnalysis() { window.location.href = "/upload"; }
+    function viewDatasets() { window.location.href = "/datasets"; }
+    function viewDocumentation() {
+      alert("VisionGuard AI capabilities:\\n\\n- Encrypted video upload\\n- AI-generated content detection\\n- Tampering analysis\\n- Face detection and privacy review\\n- Caption generation\\n- Event timeline extraction\\n- JSON, PDF, and forensic report exports");
+    }
+    function loginWithGoogle() { window.location.href = "/auth/google"; }
+    function makeFallbackAvatar(name) {
+      const div = document.createElement("div");
+      div.className = "user-widget-avatar-fallback";
+      div.textContent = (name || "?")[0].toUpperCase();
+      return div;
+    }
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/me");
+        const data = await res.json();
+        if (!data.authenticated) return;
+        document.getElementById("loginBtn").style.display = "none";
+        const widget = document.getElementById("userWidget");
+        widget.style.display = "inline-flex";
+        document.getElementById("userWidgetName").textContent = data.name || data.email;
+        const wrap = document.getElementById("userWidgetAvatarWrap");
+        if (data.picture) {
+          const img = document.createElement("img");
+          img.src = data.picture;
+          img.alt = data.name || "";
+          img.onerror = () => img.replaceWith(makeFallbackAvatar(data.name));
+          wrap.appendChild(img);
+        } else {
+          wrap.appendChild(makeFallbackAvatar(data.name));
+        }
+      } catch (_) {}
+    }
+    function initHeroMatrix() {
+      const matrix = document.querySelector(".matrix");
+      if (matrix) matrix.innerHTML = Array.from({ length: 42 }, () => "<span></span>").join("");
+    }
+    function initParticles() {
+      const canvas = document.getElementById("particles");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      let stars = [];
+      function resize() {
+        canvas.width = Math.floor(window.innerWidth * dpr);
+        canvas.height = Math.floor(window.innerHeight * dpr);
+        canvas.style.width = `${window.innerWidth}px`;
+        canvas.style.height = `${window.innerHeight}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        stars = Array.from({ length: Math.max(36, Math.floor(window.innerWidth / 34)) }, () => ({
+          x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+          s: 0.6 + Math.random() * 1.8, a: 0.16 + Math.random() * 0.42, v: 0.08 + Math.random() * 0.22
+        }));
+      }
+      function draw() {
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        for (const p of stars) {
+          p.y -= p.v;
+          if (p.y < -5) p.y = window.innerHeight + 5;
+          ctx.fillStyle = `rgba(106, 212, 255, ${p.a})`;
+          ctx.fillRect(p.x, p.y, p.s, p.s);
+        }
+        requestAnimationFrame(draw);
+      }
+      resize(); draw(); window.addEventListener("resize", resize);
+    }
+    if (new URLSearchParams(window.location.search).get("oauth_notice") === "1") {
+      alert("Google OAuth is not configured yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to .env, then restart the server.");
+      history.replaceState(null, "", "/");
+    }
+    checkAuth();
+    initHeroMatrix();
+    initParticles();
+  </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Application data — keep folder structure, ignore content
+uploads/*
+!uploads/.gitkeep
+results/*
+!results/.gitkeep
+logs/*
+!logs/.gitkeep
+database/*.db
+database/*.db-journal
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Claude Code internal files
+.claude/
+
+# Generated report files (large binaries — regenerate locally)
+*.docx
+*.pdf
+fig*.png
+fig_*.png
+VisionGuard_*.docx
+VisionGuard_*.pdf
+
+# Secrets — NEVER commit these
+.env
+.env.production
+backend/aes.key
+backend/aes.key.invalid
+backend/fernet.key
+.ngrok_config.json
+
+# Multiple venv folders
+.venv-*/
+
+# ML model weights — too large for GitHub, downloaded at runtime
+pretrainedmodels/models/
+backend/models/
+
+# Test/temp output files
+server_err*.log
+server_out*.log
+server_test*.log
+tunnel_out*.txt
+tunnel_test*.txt
+*.zip</content>
+<parameter name="filePath">c:\Users\compumarts\Desktop\eea omar\.gitignore

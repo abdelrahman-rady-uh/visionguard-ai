@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionGuard AI — Detection Forensics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Design Tokens ──────────────────────────────────────── */
+    :root {
+      --bg: #070d16;
+      --bg-soft: #0e1726;
+      --ink: #f2f7ff;
+      --muted: #91a8c4;
+      --glass: rgba(19, 31, 52, 0.6);
+      --line: rgba(137, 170, 212, 0.18);
+      --primary: #2ad4ff;
+      --primary-2: #4cffc2;
+      --accent: #ffb24a;
+      --danger: #ff5e7a;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --t: 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+
+    body {
+      background:
+        radial-gradient(circle at 75% -8%, rgba(42,212,255,.18), transparent 36%),
+        radial-gradient(circle at 25% 110%, rgba(76,255,194,.12), transparent 30%),
+        linear-gradient(120deg, #050a12, var(--bg));
+      color: var(--ink);
+      font-family: "Manrope", sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,.15); }
+    ::-webkit-scrollbar-thumb { background: rgba(42,212,255,.3); border-radius: 999px; }
+
+    /* ── Ambient blobs ──────────────────────────────────────── */
+    .ambient {
+      position: fixed;
+      width: 420px; height: 420px;
+      filter: blur(80px);
+      opacity: .18;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .ambient-a { top: -140px; left: -100px; background: #2ad4ff; animation: floatA 12s ease-in-out infinite; }
+    .ambient-b { right: -140px; bottom: 20%; background: #4cffc2; animation: floatB 15s ease-in-out infinite; }
+
+    @keyframes floatA { 0%,100%{transform:translateY(0) translateX(0)} 50%{transform:translateY(-28px) translateX(12px)} }
+    @keyframes floatB { 0%,100%{transform:translateY(0) translateX(0)} 50%{transform:translateY(20px) translateX(-12px)} }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1200px, 94vw);
+      margin: 24px auto 48px;
+    }
+
+    /* ── Topbar ─────────────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100%{opacity:1;box-shadow:0 0 8px var(--primary)}
+      50%{opacity:.5;box-shadow:0 0 3px var(--primary)}
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-family: "Manrope", sans-serif;
+      font-weight: 700;
+      font-size: .86rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--t);
+      white-space: nowrap;
+    }
+
+    .btn-ghost {
+      border-color: var(--line);
+      background: rgba(11,18,31,.5);
+      color: var(--ink);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-solid {
+      background: linear-gradient(135deg, var(--primary), #44b3ff);
+      color: #041320;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(42,212,255,.25);
+    }
+
+    .btn-solid:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(42,212,255,.4);
+    }
+
+    /* ── Hero ───────────────────────────────────────────────── */
+    .hero { margin-bottom: 24px; }
+
+    .tag {
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: 1.8px;
+      color: var(--primary-2);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(1.5rem, 3vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.18;
+      letter-spacing: -.3px;
+      margin-bottom: 10px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: .94rem;
+      max-width: 600px;
+    }
+
+    /* ── Upload Section (must keep class .upload-section — JS uses it) ── */
+    .upload-section {
+      border: 1.5px dashed rgba(72,199,255,.45);
+      background: linear-gradient(145deg, rgba(13,24,41,.72), rgba(8,15,27,.78));
+      border-radius: var(--radius-lg);
+      padding: 44px 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--t);
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(42,212,255,.06), transparent 70%);
+      pointer-events: none;
+    }
+
+    .upload-section:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(42,212,255,.1), 0 8px 32px rgba(42,212,255,.1);
+      transform: translateY(-2px);
+    }
+
+    .upload-section input { display: none; }
+
+    .upload-section-icon {
+      font-size: 2.8rem;
+      display: block;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 0 14px rgba(42,212,255,.5));
+      line-height: 1;
+    }
+
+    .upload-text {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .upload-hint {
+      font-size: .84rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    /* ── Loading ─────────────────────────────────────────────── */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 32px 20px;
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      border-radius: var(--radius-lg);
+      margin-bottom: 20px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 36px; height: 36px;
+      border: 3px solid rgba(42,212,255,.15);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 14px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    /* ── Results container (must keep id="results" — JS writes to it) ── */
+    .results {
+      display: none;
+    }
+
+    /* ── Result Cards (generated by JS displayResults()) ─────── */
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .result-card {
+      border: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+
+    .result-card:hover {
+      border-color: rgba(42,212,255,.35);
+      box-shadow: 0 8px 24px rgba(42,212,255,.1);
+    }
+
+    .result-card h3 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, #dce9ff, var(--primary-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .result-status {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 14px 0;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      background: rgba(11,18,31,.5);
+      border: 1px solid var(--line);
+    }
+
+    .status-ai    { color: var(--danger); border-color: rgba(255,94,122,.3) !important; }
+    .status-real  { color: var(--primary-2); border-color: rgba(76,255,194,.3) !important; }
+    .status-inconclusive { color: var(--accent); border-color: rgba(255,178,74,.3) !important; }
+
+    .confidence-bar {
+      width: 100%;
+      height: 28px;
+      background: rgba(11,18,31,.6);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin: 14px 0;
+      border: 1px solid var(--line);
+    }
+
+    .confidence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-2), var(--primary), #44b3ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #041320;
+      font-weight: 700;
+      font-size: .85rem;
+      font-family: "Space Grotesk", sans-serif;
+      transition: width .6s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    /* ── Signals Grid (generated by JS) ─────────────────────── */
+    .signals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .signal-item {
+      border: 1px solid rgba(42,212,255,.2);
+      background: rgba(15,28,50,.5);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      transition: all var(--t);
+    }
+
+    .signal-item:hover {
+      border-color: rgba(42,212,255,.5);
+      background: rgba(22,42,72,.65);
+      box-shadow: 0 0 14px rgba(42,212,255,.15);
+      transform: translateY(-1px);
+    }
+
+    .signal-name {
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .9px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .signal-value {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary-2);
+    }
+
+    /* ── Frame Analysis (generated by JS) ───────────────────── */
+    .frames-analysis {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .frames-analysis h3 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--primary);
+      -webkit-text-fill-color: unset;
+      background: none;
+    }
+
+    .frame-item {
+      border: 1px solid rgba(42,212,255,.16);
+      background: rgba(11,18,31,.5);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: border-color var(--t);
+    }
+
+    .frame-item:hover { border-color: rgba(42,212,255,.38); }
+
+    .frame-header {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: .86rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .frame-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 8px;
+      font-size: .82rem;
+    }
+
+    .metric {
+      background: rgba(8,15,27,.6);
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+    }
+
+    .metric-label {
+      font-size: .72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 3px;
+    }
+
+    .metric-value {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      color: var(--primary-2);
+    }
+
+    /* ── Error block (generated by JS) ──────────────────────── */
+    .error {
+      background: rgba(255,94,122,.07);
+      border-left: 3px solid var(--danger);
+      border: 1px solid rgba(255,94,122,.25);
+      border-left-width: 3px;
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      margin-top: 20px;
+      color: #ff8099;
+      font-size: .9rem;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    .footer-text {
+      text-align: center;
+      color: var(--muted);
+      margin-top: 48px;
+      font-size: .82rem;
+      opacity: .7;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .signals-grid { grid-template-columns: repeat(2,1fr); }
+      .result-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .shell { width: 100%; padding: 0 12px; }
+      h1 { font-size: 1.4rem; }
+      .signals-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <div class="shell">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <a href="/" class="brand">
+        <span class="brand-dot"></span>
+        VisionGuard AI
+      </a>
+      <nav class="nav-links">
+        <a href="/" class="btn btn-ghost">← Home</a>
+        <a href="/upload" class="btn btn-ghost">Upload</a>
+        <a href="/analysis" class="btn btn-ghost">Multi-Provider</a>
+      </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <p class="tag">Aggressive Detection Mode — System v6.0</p>
+      <h1>Deepfake Detection &amp; Forensic Analysis</h1>
+      <p class="lead">Upload a video for advanced multi-signal deepfake detection — frame-by-frame analysis with biological, temporal, and frequency forensic signals.</p>
+    </section>
+
+    <!-- Upload Section (JS listens on .upload-section) -->
+    <div class="upload-section" onclick="document.getElementById('videoInput').click()">
+      <span class="upload-section-icon">🔍</span>
+      <div class="upload-text">Upload Video for Analysis</div>
+      <div class="upload-hint">Click to select or drag &amp; drop — MP4, AVI, MOV files</div>
+      <button class="btn btn-solid" type="button" style="pointer-events:none;">Select File</button>
+      <input type="file" id="videoInput" accept="video/*" />
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Analyzing video… this may take 1–2 minutes</div>
+    </div>
+
+    <!-- Results (JS writes into this div) -->
+    <div class="results" id="results"></div>
+
+    <div class="footer-text">
+      <p>© 2026 VisionGuard AI Detection System | Forensic Analysis Dashboard</p>
+    </div>
+
+  </div>
+
+  <script>
+    const uploadSection = document.querySelector('.upload-section');
+    const videoInput = document.getElementById('videoInput');
+    const loadingDiv = document.getElementById('loading');
+    const resultsDiv = document.getElementById('results');
+
+    /* Drag and drop (color values updated to match new dark theme) */
+    uploadSection.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadSection.style.borderColor = '#2ad4ff';
+      uploadSection.style.background = 'linear-gradient(145deg, rgba(18,34,58,.78), rgba(11,22,40,.82))';
+    });
+
+    uploadSection.addEventListener('dragleave', () => {
+      uploadSection.style.borderColor = '';
+      uploadSection.style.background = '';
+    });
+
+    uploadSection.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadSection.style.borderColor = '';
+      uploadSection.style.background = '';
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        videoInput.files = files;
+        analyzeVideo();
+      }
+    });
+
+    videoInput.addEventListener('change', analyzeVideo);
+
+    function analyzeVideo() {
+      const file = videoInput.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('video', file);
+
+      loadingDiv.style.display = 'block';
+      resultsDiv.style.display = 'none';
+
+      fetch('/api/upload', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(uploadRes => {
+          if (!uploadRes.video_id) throw new Error(uploadRes.error || 'Upload failed');
+          return fetch(`/api/analyze/${uploadRes.video_id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+        })
+        .then(r => r.json())
+        .then(analysisRes => {
+          if (analysisRes.error) throw new Error(analysisRes.error);
+          loadingDiv.style.display = 'none';
+          displayResults(analysisRes);
+        })
+        .catch(err => {
+          loadingDiv.style.display = 'none';
+          resultsDiv.style.display = 'block';
+          resultsDiv.innerHTML = `<div class="error">❌ Error: ${err.message}</div>`;
+        });
+    }
+
+    function displayResults(data) {
+      const result = data.result || data;
+      const status = result.status;
+      const confidence = result.confidence;
+      const signals = result.signals;
+      const frames = result.frame_analysis || [];
+
+      let statusClass = 'status-inconclusive';
+      if (status.includes('AI')) statusClass = 'status-ai';
+      if (status.includes('Real')) statusClass = 'status-real';
+
+      let html = `
+        <div class="result-grid">
+          <div class="result-card">
+            <h3>🎯 Detection Result</h3>
+            <div class="result-status ${statusClass}">${status}</div>
+            <div style="font-size:.84rem;color:var(--muted);margin-bottom:6px;">Confidence Score</div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" style="width:${confidence}%">${confidence.toFixed(1)}%</div>
+            </div>
+            <div style="text-align:center;font-size:.84rem;color:var(--muted);">
+              AI Likelihood: ${signals.final_ai_score || 'N/A'}/100
+            </div>
+          </div>
+        </div>
+
+        <div class="signals-grid">
+          <div class="signal-item">
+            <div class="signal-name">Frequency Manipulation</div>
+            <div class="signal-value">${(signals.frequency_manipulation || 0).toFixed(1)}</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-name">Temporal Anomaly</div>
+            <div class="signal-value">${(signals.temporal_anomaly || 0).toFixed(1)}</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-name">Facial Inconsistency</div>
+            <div class="signal-value">${(signals.facial_inconsistency || 0).toFixed(1)}</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-name">GAN Artifacts</div>
+            <div class="signal-value">${(signals.gan_artifacts || 0).toFixed(1)}</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-name">Eye Region Manipulation</div>
+            <div class="signal-value">${(signals.eye_region_manipulation || 0).toFixed(1)}</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-name">Color Space Anomaly</div>
+            <div class="signal-value">${(signals.color_space_anomaly || 0).toFixed(1)}</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-name">Biological Signals</div>
+            <div class="signal-value">${(signals.biological_signals || 0).toFixed(1)}</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-name">Frames Analyzed</div>
+            <div class="signal-value">${signals.frames_analyzed || 0}</div>
+          </div>
+        </div>
+      `;
+
+      if (frames.length > 0) {
+        html += `<div class="frames-analysis">
+          <h3>📊 Frame-by-Frame Analysis (First ${frames.length} frames)</h3>`;
+
+        frames.forEach(frame => {
+          html += `
+            <div class="frame-item">
+              <div class="frame-header">Frame ${frame.frame_number}</div>
+              <div class="frame-metrics">`;
+
+          if (frame.brightness) {
+            html += `
+              <div class="metric">
+                <div class="metric-label">Brightness</div>
+                <div class="metric-value">${frame.brightness.mean.toFixed(1)}</div>
+              </div>`;
+          }
+
+          if (frame.edges) {
+            html += `
+              <div class="metric">
+                <div class="metric-label">Edges</div>
+                <div class="metric-value">${(frame.edges.edge_ratio * 100).toFixed(2)}%</div>
+              </div>`;
+          }
+
+          if (frame.sharpness) {
+            html += `
+              <div class="metric">
+                <div class="metric-label">Sharpness</div>
+                <div class="metric-value">${frame.sharpness.sharpness_score.toFixed(3)}</div>
+              </div>`;
+          }
+
+          if (frame.noise) {
+            html += `
+              <div class="metric">
+                <div class="metric-label">Noise</div>
+                <div class="metric-value">${frame.noise.estimated_noise.toFixed(2)}</div>
+              </div>`;
+          }
+
+          html += `</div></div>`;
+        });
+
+        html += `</div>`;
+      }
+
+      resultsDiv.innerHTML = html;
+      resultsDiv.style.display = 'block';
+      resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
+</body>
+</html>

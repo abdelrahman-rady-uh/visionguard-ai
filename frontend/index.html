@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionGuard AI - Upload Evidence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-upload">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+  <canvas id="particles" class="particles"></canvas>
+
+  <main class="shell">
+    <header class="topbar reveal-up">
+      <a href="/" class="brand"><span class="brand-dot"></span>VisionGuard AI</a>
+      <nav class="nav-links">
+        <a href="/forensics" class="btn btn-ghost">Forensics</a>
+        <a href="/datasets" class="btn btn-ghost">Datasets</a>
+        <a href="/" class="btn btn-ghost">Home</a>
+      </nav>
+    </header>
+
+    <section class="hero reveal-up delay-1">
+      <div>
+        <p class="tag">Encrypted Evidence Intake</p>
+        <h1>Launch a full forensic analysis pipeline.</h1>
+        <p class="lead">Upload one video and VisionGuard AI will run captioning, synthetic-content detection, tampering checks, face privacy review, timeline extraction, and report preparation through the existing secure backend.</p>
+      </div>
+      <div class="stat-grid">
+        <article class="stat-card"><span class="metric">48</span><span class="meta">Frames sampled per job</span></article>
+        <article class="stat-card"><span class="metric">7</span><span class="meta">Forensic AI signals fused</span></article>
+        <article class="stat-card"><span class="metric">AES</span><span class="meta">Encrypted upload storage</span></article>
+      </div>
+    </section>
+
+    <section class="upload-panel reveal-up delay-2">
+      <div id="dropzone" class="dropzone">
+        <input id="videoInput" type="file" accept=".mp4,.avi,.mov" hidden>
+        <span class="dropzone-icon">VG</span>
+        <h2>Drop Video Evidence Here</h2>
+        <p>Drag and drop or choose an MP4, AVI, or MOV file.</p>
+        <div class="button-row">
+          <button id="browseBtn" type="button" class="btn btn-ghost">Choose File</button>
+          <button id="analyzeBtn" type="button" class="btn btn-solid" disabled>Run Full Analysis</button>
+        </div>
+      </div>
+
+      <div id="fileInfo" style="display:none" class="file-info">
+        <span class="file-info-icon">FILE</span>
+        <span id="fileInfoName" class="file-info-name">-</span>
+        <span id="fileInfoSize" class="file-info-size">-</span>
+      </div>
+
+      <div class="status-wrap">
+        <p id="status" class="status">Waiting for file...</p>
+        <div class="scanline"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="upload.js"></script>
+</body>
+</html>
